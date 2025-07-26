@@ -679,7 +679,7 @@ Thumbs.db
 *.pth
 *.onnx
 *.tflite
-models/
+
 checkpoints/
 
 # Data files (should be stored elsewhere or in data management system)
