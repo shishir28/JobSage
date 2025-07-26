@@ -1,0 +1,77 @@
+@page "/jobs/edit/{Id:guid}"
+@using JobSage.Domain.Entities
+@using MudBlazor
+@inject IJobService JobService
+@using JobSage.UI.Models
+@using JobSage.UI.Services
+@inject NavigationManager Nav
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5">Edit Job</MudText>
+    @if (job != null)
+    {
+        <MudForm @ref="form" Model="job">
+            <MudTextField @bind-Value="job.Title" Label="Title" Required="true" />
+            <MudTextField @bind-Value="job.Description" Label="Description" Required="true" />
+            @* <MudSelect T="JobType" @bind-Value="job.JobType" Label="Type" Required="true">
+                @foreach (var type in Enum.GetValues(typeof(JobType)))
+                {
+                    <MudSelectItem Value="@type">@type</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="JobPriority" @bind-Value="job.Priority" Label="Priority" Required="true">
+                @foreach (var priority in Enum.GetValues(typeof(JobPriority)))
+                {
+                    <MudSelectItem Value="@priority">@priority</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="JobStatus" @bind-Value="job.Status" Label="Status" Required="true">
+                @foreach (var status in Enum.GetValues(typeof(JobStatus)))
+                {
+                    <MudSelectItem Value="@status">@status</MudSelectItem>
+                }
+            </MudSelect> *@
+            <MudTextField @bind-Value="job.PropertyInfo.PropertyAddress" Label="Property Address" />
+            <MudTextField @bind-Value="job.Scheduling.DueDate" Label="Due Date" InputType="InputType.Date" />
+            <MudTextField @bind-Value="job.Cost.EstimatedCost" Label="Estimated Cost" />
+            <MudTextField @bind-Value="job.Cost.ActualCost" Label="Actual Cost" />
+            <MudTextField @bind-Value="job.Cost.ApprovedBudget" Label="Approved Budget" />
+            <MudTextField @bind-Value="job.TenantContact" Label="Tenant Contact" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveJob">Save</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+        </MudForm>
+    }
+    else
+    {
+        <MudText>No job found.</MudText>
+    }
+</MudPaper>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private JobDto? job;
+    private MudForm? form;
+
+    protected override async Task OnInitializedAsync()
+    {
+        job = await JobService.GetJobById(Id);
+        job?.EnsureNonNullNestedObjects();
+    }
+
+    private async Task SaveJob()
+    {
+        if (form != null)
+        {
+            await form.Validate();
+            if (form.IsValid && job != null)
+            {
+                await JobService.UpdateJob(job);
+                Nav.NavigateTo($"/jobs/{Id}");
+            }
+        }
+    }
+
+    private void Cancel()
+    {
+        Nav.NavigateTo($"/jobs/{Id}");
+    }
+}

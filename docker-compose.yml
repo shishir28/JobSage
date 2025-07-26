@@ -1,0 +1,76 @@
+services:
+  jobsage-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jobsage-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - jobsage-db
+    networks:
+      - jobsage-network
+    restart: unless-stopped
+
+  jobsage-api:
+    #image: jobsage-api:latest
+    build:
+      context: .
+      dockerfile: frontend/JobSage.Api/Dockerfile
+    container_name: jobsage-api
+    ports:
+      - "8080:80"
+      - "8081:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=jobsage-db;Database=jobsagedb;Username=jobsage;Password=jobsagepass
+    depends_on:
+      - jobsage-db
+    # networks:
+    #   - jobsage-network
+    restart: unless-stopped
+
+  jobsage-ui:
+    #image: jobsage-ui:latest
+    build:
+      context: .
+      dockerfile: frontend/JobSage.UI/Dockerfile
+    container_name: jobsage-ui
+    ports:
+      - "8090:80"
+      - "8091:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - PythonAI__BaseUrl=http://jobsage-backend:8000
+    depends_on:
+      # - jobsage-backend
+      - jobsage-db
+    networks:
+      - jobsage-network
+    restart: unless-stopped
+
+  jobsage-db:
+    image: postgres:16
+    container_name: jobsage-db
+    environment:
+      - POSTGRES_DB=JobSageDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=yourpassword
+    volumes:
+      - jobsage-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - jobsage-network
+    restart: unless-stopped
+
+volumes:
+  jobsage-db-data:
+    driver: local
+
+networks:
+  jobsage-network:
+    driver: bridge

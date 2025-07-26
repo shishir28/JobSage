@@ -1,0 +1,55 @@
+@page "/jobs"
+@using MudBlazor
+@rendermode InteractiveServer
+@using JobSage.Domain.Entities
+@using JobSage.UI.Models
+@using JobSage.UI.Services
+@inject IJobService JobService
+@* @inject INotificationService NotificationService *@
+@inject NavigationManager Nav
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5">Jobs</MudText>
+    <MudTable Items="JobList" Hover="true">
+        <HeaderContent>
+            <MudTh>Title</MudTh>
+             <MudTh>Type</MudTh>
+            <MudTh>Priority</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Due Date</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Title</MudTd>
+            <MudTd>@context.JobType</MudTd>
+            <MudTd>@context.Priority</MudTd>
+            <MudTd>@context.Status</MudTd>
+            <MudTd>@context.Scheduling?.DueDate?.ToShortDateString()</MudTd>
+           <MudTd>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => ViewJob(context.Id)">View</MudButton>
+                
+                <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="(() => DeleteJobAsync(context.Id))">Delete </MudButton>
+            </MudTd> 
+        </RowTemplate>
+    </MudTable>
+    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="CreateJob">Create Job</MudButton>
+</MudPaper>
+
+@code {
+    private List<JobDto> JobList = new();
+
+    protected override async Task OnInitializedAsync() =>
+        JobList = await JobService.GetJobs();
+
+    private void ViewJob(Guid id) =>
+        Nav.NavigateTo($"/jobs/{id}");
+
+    private void CreateJob() =>
+        Nav.NavigateTo("/jobs/create");
+
+    private async Task DeleteJobAsync(Guid id)
+    {
+        await JobService.DeleteJob(id);
+        JobList = await JobService.GetJobs();
+        @* await NotificationService.Warning("Job deleted!"); *@
+    }
+}

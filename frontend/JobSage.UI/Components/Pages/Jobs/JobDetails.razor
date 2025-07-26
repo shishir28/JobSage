@@ -1,0 +1,44 @@
+@page "/jobs/{Id:guid}"
+@using MudBlazor
+@using JobSage.Domain.Entities
+@using JobSage.UI.Models
+@using JobSage.UI.Services
+@inject IJobService JobService
+@inject NavigationManager Nav
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5">Job Details</MudText>
+    @if (job != null)
+    {
+        <MudText>Title: @job.Title</MudText>
+        <MudText>Description: @job.Description</MudText>
+        <MudText>Type: @job.JobType</MudText>
+        <MudText>Priority: @job.Priority</MudText>
+        <MudText>Status: @job.Status</MudText>
+        <MudText>Due Date: @job.Scheduling?.DueDate?.ToShortDateString()</MudText>
+        <MudText>Property: @job.PropertyInfo?.PropertyAddress</MudText>
+        <MudText>Estimated Cost: @job.Cost?.EstimatedCost</MudText>
+        <MudText>Actual Cost: @job.Cost?.ActualCost</MudText>
+        <MudText>Approved Budget: @job.Cost?.ApprovedBudget</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="EditJob">Edit</MudButton>
+    }
+    else
+    {
+        <MudText>No job found.</MudText>
+    }
+</MudPaper>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private JobDto? job;
+
+    protected override async Task OnInitializedAsync()
+    {
+        job = await JobService.GetJobById(Id);
+    }
+
+    private void EditJob()
+    {
+        Nav.NavigateTo($"/jobs/edit/{Id}");
+    }
+}
