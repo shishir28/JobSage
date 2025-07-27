@@ -1,5 +1,6 @@
 @page "/jobs/{Id:guid}"
 @using MudBlazor
+@rendermode InteractiveServer
 @using JobSage.Domain.Entities
 @using JobSage.UI.Models
 @using JobSage.UI.Services
@@ -20,7 +21,7 @@
         <MudText>Estimated Cost: @job.Cost?.EstimatedCost</MudText>
         <MudText>Actual Cost: @job.Cost?.ActualCost</MudText>
         <MudText>Approved Budget: @job.Cost?.ApprovedBudget</MudText>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="EditJob">Edit</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditJob(job.Id)">Edit</MudButton>
     }
     else
     {
@@ -37,8 +38,8 @@
         job = await JobService.GetJobById(Id);
     }
 
-    private void EditJob()
+    private void EditJob(Guid id)
     {
-        Nav.NavigateTo($"/jobs/edit/{Id}");
+        Nav.NavigateTo($"/jobs/edit/{id}");
     }
 }

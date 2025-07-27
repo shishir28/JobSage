@@ -25,6 +25,19 @@ namespace JobSage.Api.Controllers
             return CreatedAtAction(nameof(GetJobById), new { id = jobId }, jobId);
         }
 
+        [HttpPut("{id}")]
+        [SwaggerOperation(Summary = "Updates an existing jon")]
+        [SwaggerResponse(204, "Job updated successfully")]
+        [SwaggerResponse(400, "Invalid request")]
+        public async Task<IActionResult> UpdatePatient(Guid id, [FromBody] UpdateJobCommand command)
+        {
+            if (id != command.Id)
+                return BadRequest("joB ID mismatch");
+
+            await _mediator.Send(command);
+            return NoContent();
+        }
+
         [HttpGet("{id}")]
         [SwaggerOperation(Summary = "Gets a job by Id")]
         [SwaggerResponse(200, "Job retrieved successfully", typeof(GetJobByIdQueryResult))]

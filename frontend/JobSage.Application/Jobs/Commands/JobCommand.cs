@@ -1,6 +1,5 @@
 using JobSage.Domain.Entities;
 using JobSage.Domain.Enums;
-using JobSage.Domain.Repositories;
 using MediatR;
 
 namespace JobSage.Application.Jobs.Commands

@@ -1,18 +1,23 @@
 @page "/jobs/edit/{Id:guid}"
+@rendermode InteractiveServer
 @using JobSage.Domain.Entities
 @using MudBlazor
 @inject IJobService JobService
 @using JobSage.UI.Models
 @using JobSage.UI.Services
 @inject NavigationManager Nav
-<MudPaper Class="pa-4">
-    <MudText Typo="Typo.h5">Edit Job</MudText>
-    @if (job != null)
-    {
-        <MudForm @ref="form" Model="job">
-            <MudTextField @bind-Value="job.Title" Label="Title" Required="true" />
-            <MudTextField @bind-Value="job.Description" Label="Description" Required="true" />
-            @* <MudSelect T="JobType" @bind-Value="job.JobType" Label="Type" Required="true">
+
+<MudPopoverProvider />
+<MudGrid>
+    <MudItem xs="7">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h5">Edit Job</MudText>
+            @if (job != null)
+            {
+                <MudForm @ref="form" Model="job">
+                    <MudTextField @bind-Value="job.Title" Label="Title" Required="true" />
+                    <MudTextField @bind-Value="job.Description" Label="Description" Required="true" />
+                    @* <MudSelect T="JobType" @bind-Value="job.JobType" Label="Type" Required="true">
                 @foreach (var type in Enum.GetValues(typeof(JobType)))
                 {
                     <MudSelectItem Value="@type">@type</MudSelectItem>
@@ -30,21 +35,29 @@
                     <MudSelectItem Value="@status">@status</MudSelectItem>
                 }
             </MudSelect> *@
-            <MudTextField @bind-Value="job.PropertyInfo.PropertyAddress" Label="Property Address" />
-            <MudTextField @bind-Value="job.Scheduling.DueDate" Label="Due Date" InputType="InputType.Date" />
-            <MudTextField @bind-Value="job.Cost.EstimatedCost" Label="Estimated Cost" />
-            <MudTextField @bind-Value="job.Cost.ActualCost" Label="Actual Cost" />
-            <MudTextField @bind-Value="job.Cost.ApprovedBudget" Label="Approved Budget" />
-            <MudTextField @bind-Value="job.TenantContact" Label="Tenant Contact" />
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveJob">Save</MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
-        </MudForm>
-    }
-    else
-    {
-        <MudText>No job found.</MudText>
-    }
-</MudPaper>
+                    <MudTextField @bind-Value="job.PropertyInfo.PropertyAddress" Label="Property Address" />
+                    <MudDatePicker @bind-Date="job.Scheduling.DueDate" Label="Due Date" />
+                    <MudTextField @bind-Value="job.Cost.EstimatedCost" Label="Estimated Cost" />
+                    <MudTextField @bind-Value="job.Cost.ActualCost" Label="Actual Cost" />
+                    <MudTextField @bind-Value="job.Cost.ApprovedBudget" Label="Approved Budget" />
+                    <MudTextField @bind-Value="job.TenantContact" Label="Tenant Contact" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveJob">Save</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+                </MudForm>
+            }
+            else
+            {
+                <MudText>No job found.</MudText>
+            }
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="5">
+        <ChatWindow JobId="Id" />
+    </MudItem>
+
+</MudGrid>
+    
+
 
 @code {
     [Parameter] public Guid Id { get; set; }

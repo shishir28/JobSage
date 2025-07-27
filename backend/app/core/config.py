@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     PINECONE_API_KEY: str = os.getenv("PINECONE_API_KEY")
     PINECONE_ENV_NAME: str = os.getenv("PINECONE_ENV_NAME")
     PINECONE_INDEX_NAME: str = os.getenv("PINECONE_INDEX_NAME")
+    
+    LANGCHAIN_VERBOSE: str = os.getenv("LANGCHAIN_VERBOSE")
+    LANGCHAIN_DEBUG: str = os.getenv("LANGCHAIN_DEBUG")
 
     class Config:
         env_file = ".env"

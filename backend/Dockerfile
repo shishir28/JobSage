@@ -8,16 +8,22 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    libpq-dev \
+    python3-dev \
+    build-essential \
+    libffi-dev \
+    libssl-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Install pipenv
-RUN pip install pipenv
+# Upgrade pip first
+RUN pip install --upgrade pip
 
-# Copy Pipfile and Pipfile.lock
-COPY Pipfile Pipfile.lock ./
+# Copy requirements file
+COPY requirements.txt ./
 
 # Install Python dependencies
-RUN pipenv install --system --deploy
+RUN pip install --no-cache-dir --verbose -r requirements.txt
 
 # Copy application code
 COPY . .

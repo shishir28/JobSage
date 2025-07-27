@@ -22,7 +22,15 @@ namespace JobSage.Application.Mappings
                 AssignedTo = src.AssignedTo,
                 TenantContact = src.TenantContact,
                 PropertyInfo = src.PropertyInfo,
-                Scheduling = src.Scheduling
+                Scheduling = src.Scheduling == null ? null : new SchedulingInfo
+                {
+                    SchedulingId = src.Scheduling.SchedulingId,
+                    CreatedAt = DateTime.SpecifyKind(src.Scheduling.CreatedAt, DateTimeKind.Utc),
+                    UpdatedAt = DateTime.SpecifyKind(src.Scheduling.UpdatedAt, DateTimeKind.Utc),
+                    DueDate = src.Scheduling.DueDate.HasValue ? DateTime.SpecifyKind(src.Scheduling.DueDate.Value, DateTimeKind.Utc) : (DateTime?)null,
+                    ScheduledDate = DateTime.SpecifyKind(src.Scheduling.ScheduledDate, DateTimeKind.Utc),
+                    CompletedAt = src.Scheduling.CompletedAt.HasValue ? DateTime.SpecifyKind(src.Scheduling.CompletedAt.Value, DateTimeKind.Utc) : (DateTime?)null
+                }
             });
 
             TypeAdapterConfig<UpdateJobCommand, Job>
@@ -39,7 +47,15 @@ namespace JobSage.Application.Mappings
                 AssignedTo = src.AssignedTo,
                 TenantContact = src.TenantContact,
                 PropertyInfo = src.PropertyInfo,
-                Scheduling = src.Scheduling
+                Scheduling = src.Scheduling == null ? null : new SchedulingInfo
+                {
+                    SchedulingId = src.Scheduling.SchedulingId,
+                    CreatedAt = DateTime.SpecifyKind(src.Scheduling.CreatedAt, DateTimeKind.Utc),
+                    UpdatedAt = DateTime.SpecifyKind(src.Scheduling.UpdatedAt, DateTimeKind.Utc),
+                    DueDate = src.Scheduling.DueDate.HasValue ? DateTime.SpecifyKind(src.Scheduling.DueDate.Value, DateTimeKind.Utc) : (DateTime?)null,
+                    ScheduledDate = DateTime.SpecifyKind(src.Scheduling.ScheduledDate, DateTimeKind.Utc),
+                    CompletedAt = src.Scheduling.CompletedAt.HasValue ? DateTime.SpecifyKind(src.Scheduling.CompletedAt.Value, DateTimeKind.Utc) : (DateTime?)null
+                }
             });
 
             TypeAdapterConfig<Job, GetJobByIdQueryResult>

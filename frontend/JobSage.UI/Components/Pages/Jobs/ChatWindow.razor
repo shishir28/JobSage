@@ -1,0 +1,34 @@
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<div class="chat-window">
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.h6">Agent Chat</MudText>
+        <MudList T="string">
+            @foreach (var msg in messages)
+            {
+                <MudListItem>@msg</MudListItem>
+            }
+        </MudList>
+        <MudTextField @bind-Value="userInput" Placeholder="Type a message..." />
+        <MudButton OnClick="SendMessage" Color="Color.Primary">Send</MudButton>
+    </MudPaper>
+</div>
+
+@code {
+    [Parameter] public Guid JobId { get; set; }
+    private List<string> messages = new();
+    private string userInput = "";
+
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrWhiteSpace(userInput))
+        {
+            messages.Add($"You: {userInput}");
+            var response = await Http.PostAsJsonAsync($"/api/chat/{JobId}", new { message = userInput });
+            var reply = await response.Content.ReadAsStringAsync();
+            messages.Add($"Agent: {reply}");
+            userInput = "";
+        }
+    }
+}

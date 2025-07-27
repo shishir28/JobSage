@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from app.services.agents.job_categorization_agent import categorization_agent
 from app.services.agents.job_summarizer_agent import summarization_agent
+from fastapi.concurrency import run_in_threadpool
 
 router = APIRouter()
 
@@ -26,6 +27,7 @@ class JobRequest(BaseModel):
 async def process_job(job: JobRequest):
     request = {"title": job.title, "description": job.description}
     # result = categorization_agent.invoke(request)
-    result = summarization_agent.invoke(request)
+    # result = summarization_agent.invoke(request)
+    result = await run_in_threadpool(summarization_agent.invoke, request)
     return result
-
+    
