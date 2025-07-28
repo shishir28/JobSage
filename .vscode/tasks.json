@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build JobSage.API",
+            "type": "shell",
+            "command": "dotnet build frontend/JobSage.Api/JobSage.Api.csproj",
+            "group": "build",
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "build JobSage.UI",
+            "type": "shell",
+            "command": "dotnet build frontend/JobSage.UI/JobSage.UI.csproj",
+            "group": "build",
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "Run Python Backend",
+            "type": "shell",
+            "command": "python backend/main.py",
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
