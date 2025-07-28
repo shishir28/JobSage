@@ -8,8 +8,7 @@ from app.core.config import settings
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.runnables import RunnableMap
 
-llm = ChatOllama(model=settings.OLLAMA_MODEL, base_url=settings.OLLAMA_BASE_URL)
-
+llm = ChatOllama(model=settings.OLLAMA_MODEL, base_url=settings.OLLAMA_BASE_URL, options={"stream": False})
 system = SystemMessagePromptTemplate.from_template(
    "You are a helpful assistant that summarizes maintenance job requests."
 )

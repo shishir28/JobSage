@@ -19,9 +19,9 @@ JobSage is a comprehensive platform that leverages Large Language Models (LLMs) 
          ▼                                        ▼
 ┌─────────────────────┐                ┌─────────────────────┐
 │                     │                │                     │
-│   SQL Server /      │                │   Vector Database   │
-│   PostgreSQL        │                │   (Pinecone/Chroma) │
-│   Database          │                │                     │
+│       PostgreSQL    │                │   Vector Database   │
+│        Database     │                │   (Pinecone/Chroma) │
+│                     │                │                     │
 └─────────────────────┘                └─────────────────────┘
 ```
 

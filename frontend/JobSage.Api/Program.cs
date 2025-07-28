@@ -47,6 +47,7 @@ public class Program
         });
         builder.Services.AddApplicationDependencies();
         builder.Services.AddInfrastructureDependencies();
+        builder.Services.AddHttpClientServices(builder.Configuration);
 
         MappingConfig.RegisterMappings();
 

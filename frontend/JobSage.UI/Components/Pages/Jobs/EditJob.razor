@@ -52,7 +52,11 @@
         </MudPaper>
     </MudItem>
     <MudItem xs="5">
-        <ChatWindow JobId="Id" />
+        @if (job != null)
+        {
+            <ChatWindow CurrentJob="job" />
+        }
+        
     </MudItem>
 
 </MudGrid>
