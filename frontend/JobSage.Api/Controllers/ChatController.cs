@@ -32,8 +32,18 @@ namespace JobSage.API.Controllers
             var messageBody = new Dictionary<string, string> { { "tite", request.Title },
              { "description", request.Description }};
 
-            var llmResponse = await _chatAgentService.SendMessageAsync(jobId, request.AgentKind, JsonConvert.SerializeObject(messageBody));
+            var llmResponse = await _chatAgentService.SendMessageAsync(jobId, request.AgentKind, request.Title, request.Description);
             return Ok(llmResponse);
+        }
+
+        [HttpGet("agents")]
+        [SwaggerOperation(Summary = "Fetches available agents from the Python backend")]
+        [SwaggerResponse(200, "List of agents", typeof(Dictionary<string, object>))]
+        [SwaggerResponse(500, "Error fetching agents from the backend")]
+        public async Task<IActionResult> GetAgents()
+        {
+            var agents = await _chatAgentService.GetAgentsAsync();
+            return Ok(agents);
         }
     }
 }

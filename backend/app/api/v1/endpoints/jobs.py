@@ -41,13 +41,13 @@ async def list_agents():
     return AGENTS
 
 @router.post("/process-job", tags=["jobs"])
-def process_job( job: JobRequest):
+async def process_job( job: JobRequest):
     print(f"Processing job: {job.title}, Description: {job.description} and agent: {job.agent}")
     request = {"title": job.title, "description": job.description}
     if job.agent == "categorization":
-        result = categorization_agent.invoke(request)
+        result = await run_in_threadpool(categorization_agent.invoke, request)
     elif job.agent == "summarization":
-        result = summarization_agent.invoke(request)
+        result = await run_in_threadpool(summarization_agent.invoke, request)
     else:
         raise HTTPException(status_code=400, detail="Unknown agent")
     return result

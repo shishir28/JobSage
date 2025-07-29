@@ -1,16 +1,36 @@
 @using System.Net.Http.Json
 @using JobSage.UI.Models
 @using JobSage.UI.Services
+@using System.Text.Json
 @inject HttpClient Http
 @inject IChatService ChatService
-
 <div class="chat-window">
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.h6">Agent Chat</MudText>
-        <MudList T="string">
+
+        <div class="agent-selection">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6">Select an Agent</MudText>
+                <MudGrid>
+                    @foreach (var agent in agents)
+                    {
+                        <MudItem xs="12">
+                            <MudButton OnClick="() => SelectAgent(agent.Name)" Variant="Variant.Filled" Style="background-color: #c4c4c4; color: black;" FullWidth="true" Class="agent-message mb-2 button-height">
+                                <MudText Typo="Typo.body1" Style="color: black;">@agent.Name</MudText>
+                                @* <MudText Typo="Typo.caption" Style="color: black;">@agent.Description</MudText> *@
+                            </MudButton>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
+        </div>
+
+        <MudList T="ChatMessage">
             @foreach (var msg in messages)
             {
-                <MudListItem>@msg</MudListItem>
+                <MudListItem T="ChatMessage" Class="@(msg.IsUser ? "user-message" : "agent-message")">
+                    @msg.Text
+                </MudListItem>
             }
         </MudList>
         <MudTextField @bind-Value="userInput" Placeholder="Type a message..." />
@@ -18,37 +38,129 @@
     </MudPaper>
 </div>
 
+
 @code {
     [Parameter] public JobDto? CurrentJob { get; set; }
 
-    private List<string> messages = new();
+    private class ChatMessage
+    {
+        public string Text { get; set; } = string.Empty;
+        public bool IsUser { get; set; }
+    }
+
+    private class AgentDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+
+    private List<ChatMessage> messages = new();
     private string userInput = "";
+    private List<(string Id, string Name, string Description)> agents = new();
 
     protected override async Task OnInitializedAsync()
     {
         if (CurrentJob != null)
         {
-            messages.Add("Welcome to the chat!");
-            messages.Add("");
-            messages.Add("");
-         
-            var response = await ChatService.SendMessageAsync(CurrentJob, "summarization");
+            messages.Add(new ChatMessage { Text = "Welcome to the chat!", IsUser = false });
 
-            if (!string.IsNullOrWhiteSpace(response))                
-                messages.Add(response);
+            var jsonResponse = await ChatService.SendMessageAsync(CurrentJob, "summarization");
+
+            try
+            {
+                if (jsonResponse.TryGetProperty("Summary", out var summary))
+                {
+                    if (summary.ValueKind == JsonValueKind.String)
+                        messages.Add(new ChatMessage { Text = $"Agent: {summary.GetString()}", IsUser = false });
+                    else
+                        messages.Add(new ChatMessage { Text = "Agent: 'Summary' property is not a string.", IsUser = false });
+                }
+                else
+                {
+                    messages.Add(new ChatMessage { Text = "Agent: 'Summary' property is missing in the response.", IsUser = false });
+                }
+            }
+            catch (Exception ex)
+            {
+                messages.Add(new ChatMessage { Text = $"Agent: Error processing response - {ex.Message}", IsUser = false });
+            }
+        }
+
+        try
+        {
+            // Fetch agents using ChatService
+            var agentsDictionary = await ChatService.GetAgentsAsync();
+            agents = agentsDictionary.Select(agent => (agent.Key, agent.Value.Name, agent.Value.Description)).ToList();
+        }
+        catch (Exception ex)
+        {
+            messages.Add(new ChatMessage { Text = $"Error loading agents: {ex.Message}", IsUser = false });
         }
     }
-
 
     private async Task SendMessage()
     {
         if (!string.IsNullOrWhiteSpace(userInput))
         {
-            messages.Add($"You: {userInput}");
+            messages.Add(new ChatMessage { Text = $"You: {userInput}", IsUser = true });
             var response = await Http.PostAsJsonAsync($"/api/chat/{CurrentJob?.Id}", new { message = userInput });
             var reply = await response.Content.ReadAsStringAsync();
-            messages.Add($"Agent: {reply}");
+
+            try
+            {
+                var parsedReply = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(reply);
+                if (parsedReply.TryGetProperty("Summary", out var summary))
+                {
+                    messages.Add(new ChatMessage { Text = summary.GetString() ?? "", IsUser = false });
+                }
+                else
+                {
+                    messages.Add(new ChatMessage { Text = reply, IsUser = false });
+                }
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                messages.Add(new ChatMessage { Text = reply, IsUser = false });
+            }
+
             userInput = "";
         }
     }
+
+    private void SelectAgent(string agentName)
+    {
+        var agentId = agents.FirstOrDefault(a => a.Name == agentName).Id;
+        if (string.IsNullOrEmpty(agentId))
+        {
+            messages.Add(new ChatMessage { Text = "Agent not found.", IsUser = true });
+            return;
+        }
+        // Here you can add logic to handle the selected agent, e.g., sending a message or changing context
+    }
 }
+
+<style>
+    .user-message {
+        text-align: right;
+        background-color: #e0f7fa;
+        padding: 10px;
+        border-radius: 10px;
+        margin: 5px;
+    }
+
+    .agent-message {
+        text-align: left;
+        background-color: #f1f8e9;
+        padding: 10px;
+        border-radius: 10px;
+        margin: 5px;
+    }
+
+    .agent-selection {
+        margin-bottom: 20px;
+    }
+
+    .button-height {
+        height: 50px; /* Adjust this value to match the height of the 'Welcome to the chat!' div */
+    }
+</style>
