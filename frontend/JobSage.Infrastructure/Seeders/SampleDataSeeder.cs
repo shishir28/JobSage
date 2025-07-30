@@ -1,7 +1,6 @@
 using System.Text.Json;
 using JobSage.Domain.Entities;
 using JobSage.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace JobSage.Infrastructure.Seeders
 {
@@ -13,11 +12,16 @@ namespace JobSage.Infrastructure.Seeders
             _context = context;
         }
 
-        public async Task SeedAsync(string propertiesPath, string jobsPath, string schedulingPath)
+        public async Task SeedAsync(string contractorsPath, string propertiesPath, string jobsPath, string schedulingPath)
         {
+            var contractors = JsonSerializer.Deserialize<List<Contractor>>(await File.ReadAllTextAsync(contractorsPath));
             var properties = JsonSerializer.Deserialize<List<PropertyInformation>>(await File.ReadAllTextAsync(propertiesPath));
             var jobs = JsonSerializer.Deserialize<List<Job>>(await File.ReadAllTextAsync(jobsPath));
             var schedulingInfos = JsonSerializer.Deserialize<List<SchedulingInfo>>(await File.ReadAllTextAsync(schedulingPath));
+            if (contractors != null && !_context.Contractors.Any())
+            {
+                _context.Contractors.AddRange(contractors);
+            }
 
             if (properties != null && !_context.Properties.Any())
             {
