@@ -15,7 +15,9 @@
                     @foreach (var agent in agents)
                     {
                         <MudItem xs="12">
-                            <MudButton OnClick="() => SelectAgent(agent.Name)" Variant="Variant.Filled" Style="background-color: #c4c4c4; color: black;" FullWidth="true" Class="agent-message mb-2 button-height">
+                            <MudButton OnClick="async () => await SelectAgent(agent.Name)" Variant="Variant.Filled"
+                                Style="background-color: #c4c4c4; color: black;" FullWidth="true"
+                                Class="agent-message mb-2 button-height">
                                 <MudText Typo="Typo.body1" Style="color: black;">@agent.Name</MudText>
                                 @* <MudText Typo="Typo.caption" Style="color: black;">@agent.Description</MudText> *@
                             </MudButton>
@@ -29,7 +31,7 @@
             @foreach (var msg in messages)
             {
                 <MudListItem T="ChatMessage" Class="@(msg.IsUser ? "user-message" : "agent-message")">
-                    @msg.Text
+                    <MudText Style="white-space: pre-line;">@msg.Text</MudText>
                 </MudListItem>
             }
         </MudList>
@@ -60,34 +62,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (CurrentJob != null)
-        {
-            messages.Add(new ChatMessage { Text = "Welcome to the chat!", IsUser = false });
-
-            var jsonResponse = await ChatService.SendMessageAsync(CurrentJob, "summarization");
-
-            try
-            {
-                if (jsonResponse.TryGetProperty("Summary", out var summary))
-                {
-                    if (summary.ValueKind == JsonValueKind.String)
-                        messages.Add(new ChatMessage { Text = $"Agent: {summary.GetString()}", IsUser = false });
-                    else
-                        messages.Add(new ChatMessage { Text = "Agent: 'Summary' property is not a string.", IsUser = false });
-                }
-                else
-                {
-                    messages.Add(new ChatMessage { Text = "Agent: 'Summary' property is missing in the response.", IsUser = false });
-                }
-            }
-            catch (Exception ex)
-            {
-                messages.Add(new ChatMessage { Text = $"Agent: Error processing response - {ex.Message}", IsUser = false });
-            }
-        }
-
         try
         {
+            messages.Add(new ChatMessage { Text = "Welcome to the chat!", IsUser = false });
             // Fetch agents using ChatService
             var agentsDictionary = await ChatService.GetAgentsAsync();
             agents = agentsDictionary.Select(agent => (agent.Key, agent.Value.Name, agent.Value.Description)).ToList();
@@ -98,13 +75,61 @@
         }
     }
 
+    private async Task LoadAgentResponseAsync(JobDto currentJob, string agentId)
+    {
+        var jsonResponse = await ChatService.SendMessageAsync(currentJob, agentId);
+
+        try
+        {
+            var formattedResponse = FormatJsonElementResponse(jsonResponse);
+            messages.Add(new ChatMessage { Text = $"Agent: \n {formattedResponse}", IsUser = false });
+        }
+        catch (Exception ex)
+        {
+            messages.Add(new ChatMessage { Text = $"Agent: Error processing response - {ex.Message}", IsUser = false });
+        }
+    }
+
+    private string FormatJsonElementResponse(JsonElement jsonElement)
+    {
+        var dictionary = ParseJsonElementAsStringDictionary(jsonElement);
+        return string.Join("\n", dictionary.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+    }
+
+    private static Dictionary<string, string> ParseJsonElementAsStringDictionary(JsonElement jsonElement)
+    {
+        var result = new Dictionary<string, string>();
+
+        if (jsonElement.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in jsonElement.EnumerateObject())
+            {
+                string key = property.Name;
+                string value = property.Value.ValueKind switch
+                {
+                    JsonValueKind.String => property.Value.GetString() ?? "",
+                    JsonValueKind.Number => property.Value.GetRawText(),
+                    JsonValueKind.True => "true",
+                    JsonValueKind.False => "false",
+                    JsonValueKind.Null => "null",
+                    _ => property.Value.GetRawText(),
+                };
+                result[key] = value;
+            }
+        }
+
+        return result;
+    }
+
     private async Task SendMessage()
     {
         if (!string.IsNullOrWhiteSpace(userInput))
         {
             messages.Add(new ChatMessage { Text = $"You: {userInput}", IsUser = true });
-            var response = await Http.PostAsJsonAsync($"/api/chat/{CurrentJob?.Id}", new { message = userInput });
-            var reply = await response.Content.ReadAsStringAsync();
+
+            await Task.Delay(1000); // Simulate a delay for the agent response
+                                    @* var response = await Http.PostAsJsonAsync($"/api/chat/{CurrentJob?.Id}", new { message = userInput }); 
+             var reply = await response.Content.ReadAsStringAsync();
 
             try
             {
@@ -121,13 +146,13 @@
             catch (System.Text.Json.JsonException)
             {
                 messages.Add(new ChatMessage { Text = reply, IsUser = false });
-            }
+            } *@
 
             userInput = "";
         }
     }
 
-    private void SelectAgent(string agentName)
+    private async Task SelectAgent(string agentName)
     {
         var agentId = agents.FirstOrDefault(a => a.Name == agentName).Id;
         if (string.IsNullOrEmpty(agentId))
@@ -135,7 +160,9 @@
             messages.Add(new ChatMessage { Text = "Agent not found.", IsUser = true });
             return;
         }
-        // Here you can add logic to handle the selected agent, e.g., sending a message or changing context
+
+        if (CurrentJob != null)
+            await LoadAgentResponseAsync(CurrentJob, agentId);
     }
 }
 
@@ -161,6 +188,7 @@
     }
 
     .button-height {
-        height: 50px; /* Adjust this value to match the height of the 'Welcome to the chat!' div */
+        height: 50px;
+        /* Adjust this value to match the height of the 'Welcome to the chat!' div */
     }
 </style>
