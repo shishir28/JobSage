@@ -83,21 +83,22 @@ public class Program
             c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
         });
 
-        //SampleDataGenerator.GenerateSampleData();
+        // SampleDataGenerator.GenerateSampleData();
         // Seed sample data
-        //using (var scope = app.Services.CreateScope())
-        //{
-        //    var dbContext = scope.ServiceProvider.GetRequiredService<JobSageDbContext>();
-        //    var seeder = new SampleDataSeeder(dbContext);
+        // using (var scope = app.Services.CreateScope())
+        // {
+        //     var dbContext = scope.ServiceProvider.GetRequiredService<JobSageDbContext>();
+        //     var seeder = new SampleDataSeeder(dbContext);
 
-        //    // Adjust paths as needed
-        //    var propertiesPath = Path.Combine(app.Environment.ContentRootPath, "Seeders", "properties.json");
-        //    var jobsPath = Path.Combine(app.Environment.ContentRootPath, "Seeders", "jobs.json");
-        //    var schedulingPath = Path.Combine(app.Environment.ContentRootPath, "Seeders", "schedulinginfo.json");
+        //     // Adjust paths as needed
+        //     var contractorsPath = Path.Combine(app.Environment.ContentRootPath, "Seeders", "contractors.json");
+        //     var propertiesPath = Path.Combine(app.Environment.ContentRootPath, "Seeders", "properties.json");
+        //     var jobsPath = Path.Combine(app.Environment.ContentRootPath, "Seeders", "jobs.json");
+        //     var schedulingPath = Path.Combine(app.Environment.ContentRootPath, "Seeders", "schedulinginfo.json");
 
-        //    // Seed data synchronously at startup
-        //    seeder.SeedAsync(propertiesPath, jobsPath, schedulingPath).GetAwaiter().GetResult();
-        //}
+        //     // Seed data synchronously at startup
+        //     seeder.SeedAsync(contractorsPath, propertiesPath, jobsPath, schedulingPath).GetAwaiter().GetResult();
+        // }
 
         app.MapControllers();
         app.Run();
