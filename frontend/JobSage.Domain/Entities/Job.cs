@@ -24,6 +24,10 @@ namespace JobSage.Domain.Entities
         public Guid CreatedBy { get; set; }
         public Guid? AssignedTo { get; set; }
         public string? TenantContact { get; set; }
+
+        // Foreign Key for Contractor
+        public string? ContractorId { get; set; }
+        public Contractor? Contractor { get; set; }
     }
 
     public class PropertyInformation
@@ -49,5 +53,19 @@ namespace JobSage.Domain.Entities
         public decimal? EstimatedCost { get; set; }
         public decimal? ActualCost { get; set; }
         public decimal? ApprovedBudget { get; set; }
+    }
+
+    public class Contractor
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Trade { get; set; } = string.Empty;
+        public float Rating { get; set; }
+        public string Availability { get; set; } = string.Empty;
+        public string ContactInfo { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public float HourlyRate { get; set; }
+        public bool Preferred { get; set; }
+        public bool WarrantyApproved { get; set; }
     }
 }
