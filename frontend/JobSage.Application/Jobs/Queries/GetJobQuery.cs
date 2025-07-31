@@ -25,6 +25,7 @@ namespace JobSage.Application.Jobs.Queries
         public Guid CreatedBy { get; set; }
         public Guid? AssignedTo { get; set; }
         public string? TenantContact { get; set; }
+        public Contractor? Contractor { get; set; }
 
         public GetJobByIdQueryResult(string title,
            string description,
@@ -34,6 +35,7 @@ namespace JobSage.Application.Jobs.Queries
            PropertyInformation propertyInfo,
            SchedulingInfo scheduling,
            JobCost cost,
+           Contractor? contractor,
            Guid createdBy,
            Guid? assignedTo,
            string? tenantContact)
@@ -46,6 +48,7 @@ namespace JobSage.Application.Jobs.Queries
             PropertyInfo = propertyInfo;
             Scheduling = scheduling;
             Cost = cost;
+            Contractor = contractor;
             CreatedBy = createdBy;
             AssignedTo = assignedTo;
             TenantContact = tenantContact;
@@ -55,6 +58,7 @@ namespace JobSage.Application.Jobs.Queries
     public class GetAllJobsQuery : IRequest<List<GetAllJobsQueryResult>>
     {
     }
+
     public class GetAllJobsQueryResult
     {
         public Guid Id { get; set; }
@@ -66,12 +70,25 @@ namespace JobSage.Application.Jobs.Queries
         public PropertyInformation PropertyInfo { get; set; } = new();
         public SchedulingInfo Scheduling { get; set; } = new();
         public JobCost Cost { get; set; } = new();
+        public Contractor? Contractor { get; set; }
         public Guid CreatedBy { get; set; }
         public Guid? AssignedTo { get; set; }
         public string? TenantContact { get; set; }
 
-        public GetAllJobsQueryResult(Guid id, string title, string description, JobType jobType, JobPriority priority, JobStatus status,
-            PropertyInformation propertyInfo, SchedulingInfo scheduling, JobCost cost, Guid createdBy, Guid? assignedTo, string? tenantContact)
+        public GetAllJobsQueryResult(
+            Guid id,
+            string title,
+            string description,
+            JobType jobType,
+            JobPriority priority,
+            JobStatus status,
+            PropertyInformation propertyInfo,
+            SchedulingInfo scheduling,
+            JobCost cost,
+            Contractor? contractor,
+            Guid createdBy,
+            Guid? assignedTo,
+            string? tenantContact)
         {
             Id = id;
             Title = title;
@@ -82,6 +99,7 @@ namespace JobSage.Application.Jobs.Queries
             PropertyInfo = propertyInfo;
             Scheduling = scheduling;
             Cost = cost;
+            Contractor = contractor;
             CreatedBy = createdBy;
             AssignedTo = assignedTo;
             TenantContact = tenantContact;

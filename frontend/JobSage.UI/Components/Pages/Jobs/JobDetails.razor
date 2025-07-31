@@ -21,6 +21,7 @@
         <MudText>Estimated Cost: @job.Cost?.EstimatedCost</MudText>
         <MudText>Actual Cost: @job.Cost?.ActualCost</MudText>
         <MudText>Approved Budget: @job.Cost?.ApprovedBudget</MudText>
+        <MudText>Contractor: @job.Contractor?.Name</MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditJob(job.Id)">Edit</MudButton>
     }
     else

@@ -12,8 +12,7 @@ namespace JobSage.Api.Controllers
     {
         private readonly IMediator _mediator;
 
-        public JobsController(IMediator mediator) =>
-            _mediator = mediator;
+        public JobsController(IMediator mediator) => _mediator = mediator;
 
         [HttpPost]
         [SwaggerOperation(Summary = "Creates a new job")]

@@ -14,12 +14,15 @@ namespace JobSage.UI.Models
         public PropertyInformation? PropertyInfo { get; set; }
         public SchedulingInfo? Scheduling { get; set; }
         public JobCost? Cost { get; set; }
+        public Contractor? Contractor { get; set; }
         public void EnsureNonNullNestedObjects()
         {
             PropertyInfo ??= new PropertyInformation();
             Scheduling ??= new SchedulingInfo();
             Cost ??= new JobCost();
+            Contractor ??= new Contractor();
         }
+
         public Guid CreatedBy { get; set; }
         public Guid? AssignedTo { get; set; }
         public string? TenantContact { get; set; }

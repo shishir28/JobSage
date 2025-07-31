@@ -1,8 +1,10 @@
 @page "/jobs/edit/{Id:guid}"
 @rendermode InteractiveServer
 @using JobSage.Domain.Entities
+@using JobSage.Domain.Enums
 @using MudBlazor
 @inject IJobService JobService
+@inject IContractorService ContractorService
 @using JobSage.UI.Models
 @using JobSage.UI.Services
 @inject NavigationManager Nav
@@ -17,30 +19,36 @@
                 <MudForm @ref="form" Model="job">
                     <MudTextField @bind-Value="job.Title" Label="Title" Required="true" />
                     <MudTextField @bind-Value="job.Description" Label="Description" Required="true" />
-                    @* <MudSelect T="JobType" @bind-Value="job.JobType" Label="Type" Required="true">
-                @foreach (var type in Enum.GetValues(typeof(JobType)))
-                {
-                    <MudSelectItem Value="@type">@type</MudSelectItem>
-                }
-            </MudSelect>
-            <MudSelect T="JobPriority" @bind-Value="job.Priority" Label="Priority" Required="true">
-                @foreach (var priority in Enum.GetValues(typeof(JobPriority)))
-                {
-                    <MudSelectItem Value="@priority">@priority</MudSelectItem>
-                }
-            </MudSelect>
-            <MudSelect T="JobStatus" @bind-Value="job.Status" Label="Status" Required="true">
-                @foreach (var status in Enum.GetValues(typeof(JobStatus)))
-                {
-                    <MudSelectItem Value="@status">@status</MudSelectItem>
-                }
-            </MudSelect> *@
+                    <MudSelect T="JobType" @bind-Value="job.JobType" Label="Type" Required="true">
+                        @foreach (JobType type in Enum.GetValues(typeof(JobType)))
+                        {
+                            <MudSelectItem Value="@type">@type</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudSelect T="JobPriority" @bind-Value="job.Priority" Label="Priority" Required="true">
+                        @foreach (JobPriority priority in Enum.GetValues(typeof(JobPriority)))
+                        {
+                            <MudSelectItem Value="@priority">@priority</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudSelect T="JobStatus" @bind-Value="job.Status" Label="Status" Required="true">
+                        @foreach (JobStatus status in Enum.GetValues(typeof(JobStatus)))
+                        {
+                            <MudSelectItem Value="status">@status</MudSelectItem>
+                        }
+                    </MudSelect>
                     <MudTextField @bind-Value="job.PropertyInfo.PropertyAddress" Label="Property Address" />
                     <MudDatePicker @bind-Date="job.Scheduling.DueDate" Label="Due Date" />
                     <MudTextField @bind-Value="job.Cost.EstimatedCost" Label="Estimated Cost" />
                     <MudTextField @bind-Value="job.Cost.ActualCost" Label="Actual Cost" />
                     <MudTextField @bind-Value="job.Cost.ApprovedBudget" Label="Approved Budget" />
                     <MudTextField @bind-Value="job.TenantContact" Label="Tenant Contact" />
+                    <MudSelect T="string" Label="Contractor" @bind-Value="job.Contractor.Id" Required="true">
+                        @foreach (var contractor in contractors)
+                        {
+                            <MudSelectItem Value="@contractor.Id">@contractor.Name (@contractor.Trade)</MudSelectItem>
+                        }
+                    </MudSelect>
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveJob">Save</MudButton>
                     <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
                 </MudForm>
@@ -56,22 +64,24 @@
         {
             <ChatWindow CurrentJob="job" />
         }
-        
+
     </MudItem>
 
 </MudGrid>
-    
+
 
 
 @code {
     [Parameter] public Guid Id { get; set; }
     private JobDto? job;
     private MudForm? form;
+    private List<ContractorDto> contractors = new();
 
     protected override async Task OnInitializedAsync()
     {
         job = await JobService.GetJobById(Id);
         job?.EnsureNonNullNestedObjects();
+        contractors = await ContractorService.GetContractors();
     }
 
     private async Task SaveJob()

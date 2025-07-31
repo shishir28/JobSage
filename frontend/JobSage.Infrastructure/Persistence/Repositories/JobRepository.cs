@@ -8,15 +8,23 @@ namespace JobSage.Infrastructure.Persistence.Repositories
     {
         private readonly JobSageDbContext _context;
 
-        public JobRepository(JobSageDbContext context) =>
-            _context = context;
+        public JobRepository(JobSageDbContext context) => _context = context;
 
         public async Task<Job?> GetByIdAsync(Guid Id) =>
-             await _context.Jobs.FindAsync(Id);
+            await _context.Jobs
+                .Include(j => j.Contractor)
+                .Include(j => j.PropertyInfo)
+                .Include(j => j.Scheduling)
+                .Include(j => j.Cost)
+                .FirstOrDefaultAsync(j => j.Id == Id);
 
         public async Task<List<Job>> GetAllAsync() =>
-             await _context.Jobs.ToListAsync();
-
+            await _context.Jobs
+                .Include(j => j.Contractor)
+                .Include(j => j.PropertyInfo)
+                .Include(j => j.Scheduling)
+                .Include(j => j.Cost)
+                .ToListAsync();
         public async Task<Guid> AddAsync(Job job)
         {
             await _context.Jobs.AddAsync(job);
@@ -36,8 +44,5 @@ namespace JobSage.Infrastructure.Persistence.Repositories
             _context.Jobs.Remove(job!);
             await _context.SaveChangesAsync();
         }
-
     }
 }
-
-

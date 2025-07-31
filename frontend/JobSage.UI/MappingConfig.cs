@@ -20,6 +20,7 @@ namespace JobSage.UI
                     PropertyInfo = src.PropertyInfo,
                     Scheduling = src.Scheduling,
                     Cost = src.Cost,
+                    Contractor = src.Contractor,
                     CreatedBy = src.CreatedBy,
                     AssignedTo = src.AssignedTo,
                     TenantContact = src.TenantContact

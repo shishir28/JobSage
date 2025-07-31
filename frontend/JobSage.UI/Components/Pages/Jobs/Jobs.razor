@@ -5,14 +5,13 @@
 @using JobSage.UI.Models
 @using JobSage.UI.Services
 @inject IJobService JobService
-@* @inject INotificationService NotificationService *@
 @inject NavigationManager Nav
 <MudPaper Class="pa-4">
     <MudText Typo="Typo.h5">Jobs</MudText>
     <MudTable Items="JobList" Hover="true">
         <HeaderContent>
             <MudTh>Title</MudTh>
-             <MudTh>Type</MudTh>
+            <MudTh>Type</MudTh>
             <MudTh>Priority</MudTh>
             <MudTh>Status</MudTh>
             <MudTh>Due Date</MudTh>
@@ -24,11 +23,13 @@
             <MudTd>@context.Priority</MudTd>
             <MudTd>@context.Status</MudTd>
             <MudTd>@context.Scheduling?.DueDate?.ToShortDateString()</MudTd>
-           <MudTd>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => ViewJob(context.Id)">View</MudButton>
-                
-                <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="(() => DeleteJobAsync(context.Id))">Delete </MudButton>
-            </MudTd> 
+            <MudTd>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => ViewJob(context.Id)">View
+                </MudButton>
+
+                <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete"
+                    OnClick="(() => DeleteJobAsync(context.Id))">Delete </MudButton>
+            </MudTd>
         </RowTemplate>
     </MudTable>
     <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="CreateJob">Create Job</MudButton>
@@ -38,13 +39,13 @@
     private List<JobDto> JobList = new();
 
     protected override async Task OnInitializedAsync() =>
-        JobList = await JobService.GetJobs();
+    JobList = await JobService.GetJobs();
 
     private void ViewJob(Guid id) =>
-        Nav.NavigateTo($"/jobs/{id}");
+    Nav.NavigateTo($"/jobs/{id}");
 
     private void CreateJob() =>
-        Nav.NavigateTo("/jobs/create");
+    Nav.NavigateTo("/jobs/create");
 
     private async Task DeleteJobAsync(Guid id)
     {

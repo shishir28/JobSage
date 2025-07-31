@@ -22,6 +22,7 @@ namespace JobSage.Application.Mappings
                 AssignedTo = src.AssignedTo,
                 TenantContact = src.TenantContact,
                 PropertyInfo = src.PropertyInfo,
+
                 Scheduling = src.Scheduling == null ? null : new SchedulingInfo
                 {
                     SchedulingId = src.Scheduling.SchedulingId,
@@ -69,6 +70,7 @@ namespace JobSage.Application.Mappings
                 src.PropertyInfo,
                 src.Scheduling,
                 src.Cost,
+                src.Contractor,
                 src.CreatedBy,
                 src.AssignedTo,
                 src.TenantContact));

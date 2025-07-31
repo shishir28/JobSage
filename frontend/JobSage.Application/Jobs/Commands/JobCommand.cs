@@ -14,6 +14,7 @@ namespace JobSage.Application.Jobs.Commands
         public PropertyInformation PropertyInfo { get; set; } = new();
         public SchedulingInfo Scheduling { get; set; } = new();
         public JobCost Cost { get; set; } = new();
+        public Contractor Contractor { get; set; } = new();
         public Guid CreatedBy { get; set; }
         public Guid? AssignedTo { get; set; }
         public string? TenantContact { get; set; }
@@ -30,6 +31,7 @@ namespace JobSage.Application.Jobs.Commands
         public PropertyInformation PropertyInfo { get; set; } = new();
         public SchedulingInfo Scheduling { get; set; } = new();
         public JobCost Cost { get; set; } = new();
+        public Contractor Contractor { get; set; } = new();
         public Guid CreatedBy { get; set; }
         public Guid? AssignedTo { get; set; }
         public string? TenantContact { get; set; }

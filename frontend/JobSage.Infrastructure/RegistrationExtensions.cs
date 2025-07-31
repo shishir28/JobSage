@@ -9,6 +9,8 @@ namespace JobSage.Infrastructure
         public static IServiceCollection AddInfrastructureDependencies(this IServiceCollection services)
         {
             services.AddScoped<IJobRepository, JobRepository>();
+            services.AddScoped<IContractorRepository, ContractorRepository>();
+
             return services;
         }
     }
