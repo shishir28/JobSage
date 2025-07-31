@@ -8,6 +8,7 @@
 @inject NavigationManager Nav
 <MudPaper Class="pa-4">
     <MudText Typo="Typo.h5">Jobs</MudText>
+
     <MudTable Items="JobList" Hover="true">
         <HeaderContent>
             <MudTh>Title</MudTh>
@@ -32,7 +33,9 @@
             </MudTd>
         </RowTemplate>
     </MudTable>
-    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="CreateJob">Create Job</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Nav.NavigateTo("/jobs/add"))">
+        Create Job
+    </MudButton>
 </MudPaper>
 
 @code {
@@ -43,9 +46,6 @@
 
     private void ViewJob(Guid id) =>
     Nav.NavigateTo($"/jobs/{id}");
-
-    private void CreateJob() =>
-    Nav.NavigateTo("/jobs/create");
 
     private async Task DeleteJobAsync(Guid id)
     {

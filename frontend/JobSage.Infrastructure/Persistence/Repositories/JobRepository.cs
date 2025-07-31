@@ -27,6 +27,7 @@ namespace JobSage.Infrastructure.Persistence.Repositories
                 .ToListAsync();
         public async Task<Guid> AddAsync(Job job)
         {
+            job.Contractor = null; // Ensure only ContractorId is set, and Contractor is not tracked
             await _context.Jobs.AddAsync(job);
             await _context.SaveChangesAsync();
             return job.Id;
@@ -43,6 +44,17 @@ namespace JobSage.Infrastructure.Persistence.Repositories
             var job = await _context.Jobs.FindAsync(Id);
             _context.Jobs.Remove(job!);
             await _context.SaveChangesAsync();
+        }
+
+        public void EnsureUtcDates(Job job)
+        {
+            if (job.Scheduling.DueDate.HasValue)
+                job.Scheduling.DueDate = DateTime.SpecifyKind(job.Scheduling.DueDate.Value, DateTimeKind.Utc);
+
+            if (job.Scheduling.ScheduledDate != default)
+                job.Scheduling.ScheduledDate = DateTime.SpecifyKind(job.Scheduling.ScheduledDate, DateTimeKind.Utc);
+            if (job.Scheduling.CompletedAt.HasValue)
+                job.Scheduling.CompletedAt = DateTime.SpecifyKind(job.Scheduling.CompletedAt.Value, DateTimeKind.Utc);
         }
     }
 }
