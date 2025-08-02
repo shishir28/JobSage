@@ -1,4 +1,12 @@
 services:
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: chromadb
+    ports:
+      - "8009:8000"
+    volumes:
+      - chromadb_data:/data  # Reference to the defined volume
+
   jobsage-backend:
     build:
       context: ./backend
@@ -15,7 +23,6 @@ services:
     restart: unless-stopped
 
   jobsage-api:
-    #image: jobsage-api:latest
     build:
       context: .
       dockerfile: frontend/JobSage.Api/Dockerfile
@@ -28,12 +35,11 @@ services:
       - ConnectionStrings__DefaultConnection=Host=jobsage-db;Database=jobsagedb;Username=jobsage;Password=jobsagepass
     depends_on:
       - jobsage-db
-    # networks:
-    #   - jobsage-network
+    networks:
+      - jobsage-network
     restart: unless-stopped
 
   jobsage-ui:
-    #image: jobsage-ui:latest
     build:
       context: .
       dockerfile: frontend/JobSage.UI/Dockerfile
@@ -46,7 +52,7 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - PythonAI__BaseUrl=http://jobsage-backend:8000
     depends_on:
-      # - jobsage-backend
+      - jobsage-backend
       - jobsage-db
     networks:
       - jobsage-network
@@ -68,6 +74,8 @@ services:
     restart: unless-stopped
 
 volumes:
+  chromadb_data:  # Define the chromadb_data volume
+    driver: local
   jobsage-db-data:
     driver: local
 

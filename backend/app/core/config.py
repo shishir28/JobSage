@@ -59,6 +59,19 @@ class Settings(BaseSettings):
     LANGCHAIN_VERBOSE: str = os.getenv("LANGCHAIN_VERBOSE")
     LANGCHAIN_DEBUG: str = os.getenv("LANGCHAIN_DEBUG")
 
+    POSTGRES_USER: str = os.getenv("POSTGRES_USER")
+    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
+    POSTGRES_DB: str = os.getenv("POSTGRES_DB")
+    POSTGRES_HOST: str = os.getenv("POSTGRES_HOST")
+    POSTGRES_PORT: int = os.getenv("POSTGRES_PORT")
+    
+    CHROMA_API_IMPL: str = os.getenv("CHROMA_API_IMPL")
+    CHROMA_HOST: str = os.getenv("CHROMA_HOST")
+    CHROMA_PORT: int = os.getenv("CHROMA_PORT")
+    CHROMA_COLLECTION_NAME: str = os.getenv("CHROMA_COLLECTION_NAME")
+    CHROMA_PERSIST: bool = os.getenv("CHROMA_PERSIST", "True").lower() in ("true", "1", "yes")
+    CHROMA_PERSIST_DIRECTORY: str = os.getenv("CHROMA_PERSIST_DIRECTORY")
+
     class Config:
         env_file = ".env"
         case_sensitive = True
