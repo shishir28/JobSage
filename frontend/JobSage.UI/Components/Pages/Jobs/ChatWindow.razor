@@ -30,8 +30,10 @@
         <MudList T="ChatMessage">
             @foreach (var msg in messages)
             {
-                <MudListItem T="ChatMessage" Class="@(msg.IsUser ? "user-message" : "agent-message")">
-                    <MudText Style="white-space: pre-line;">@msg.Text</MudText>
+                <MudListItem T="ChatMessage">
+                    <div class="@(msg.IsUser ? "user-message" : "agent-message")">
+                        <MudText Style="white-space: pre-line;">@msg.Text</MudText>
+                    </div>
                 </MudListItem>
             }
         </MudList>
@@ -59,6 +61,7 @@
     private List<ChatMessage> messages = new();
     private string userInput = "";
     private List<(string Id, string Name, string Description)> agents = new();
+    [Parameter] public EventCallback<List<string>> OnContractorIdsReceived { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -83,6 +86,8 @@
         {
             var formattedResponse = FormatJsonElementResponse(jsonResponse);
             messages.Add(new ChatMessage { Text = $"Agent: \n {formattedResponse}", IsUser = false });
+            if (agentId == "recommendation")
+                await FilterContractorsAsync(jsonResponse);
         }
         catch (Exception ex)
         {
@@ -90,10 +95,36 @@
         }
     }
 
+    private async Task FilterContractorsAsync(JsonElement jsonElement)
+    {
+        var contractorIds = jsonElement.EnumerateArray()
+        .Select(item => item.GetProperty("contractorid").GetString() ?? "Unknown Contractor")
+        .ToList();
+
+        if (contractorIds.Count > 0)
+            await OnContractorIdsReceived.InvokeAsync(contractorIds);
+    }
+
     private string FormatJsonElementResponse(JsonElement jsonElement)
     {
-        var dictionary = ParseJsonElementAsStringDictionary(jsonElement);
-        return string.Join("\n", dictionary.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+        if (jsonElement.ValueKind == JsonValueKind.Array)
+            return ParseRecommendations(jsonElement);
+        else
+        {
+            var dictionary = ParseJsonElementAsStringDictionary(jsonElement);
+            return string.Join("\n", dictionary.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+        }
+    }
+
+    private string ParseRecommendations(JsonElement jsonElement)
+    {
+        if (jsonElement.ValueKind == JsonValueKind.Array)
+        {
+            var items = jsonElement.EnumerateArray()
+            .Select((item, idx) => FormatJsonElementResponse(item));
+            return string.Join("\n\n", items);
+        }
+        throw new ArgumentException("Expected an array of recommendations.");
     }
 
     private static Dictionary<string, string> ParseJsonElementAsStringDictionary(JsonElement jsonElement)
@@ -165,30 +196,3 @@
             await LoadAgentResponseAsync(CurrentJob, agentId);
     }
 }
-
-<style>
-    .user-message {
-        text-align: right;
-        background-color: #e0f7fa;
-        padding: 10px;
-        border-radius: 10px;
-        margin: 5px;
-    }
-
-    .agent-message {
-        text-align: left;
-        background-color: #f1f8e9;
-        padding: 10px;
-        border-radius: 10px;
-        margin: 5px;
-    }
-
-    .agent-selection {
-        margin-bottom: 20px;
-    }
-
-    .button-height {
-        height: 50px;
-        /* Adjust this value to match the height of the 'Welcome to the chat!' div */
-    }
-</style>

@@ -1,4 +1,3 @@
-using System;
 using JobSage.Domain.Enums;
 
 namespace JobSage.Domain.Entities
@@ -67,5 +66,26 @@ namespace JobSage.Domain.Entities
         public float HourlyRate { get; set; }
         public bool Preferred { get; set; }
         public bool WarrantyApproved { get; set; }
+    }
+
+    public class Conversation
+    {
+        public Guid Id { get; set; }
+        public string Retriever { get; set; } = string.Empty;
+        public string Memory { get; set; } = string.Empty;
+        public string LLM { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public ICollection<Message> Messages { get; set; } = [];
+    }
+
+    public class Message
+    {
+        public Guid Id { get; set; }
+        public string Role { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public Guid ConversationId { get; set; }
+        public Conversation Conversation { get; set; } = null!;
     }
 }

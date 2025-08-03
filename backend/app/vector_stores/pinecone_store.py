@@ -2,6 +2,8 @@ from pinecone import Pinecone, ServerlessSpec
 
 from app.vector_stores.base_store import BaseVectorStore
 from app.core.config import settings
+
+import os
 class PineconeStore(BaseVectorStore):
     def __init__(self, index_name):
         pc = Pinecone(
@@ -9,7 +11,7 @@ class PineconeStore(BaseVectorStore):
             environment=settings.PINECONE_ENV_NAME            
         )
         self.index = pc.Index(index_name)
-     
+       
 
     def add(self, embeddings, metadata):
     # If a single embedding is passed as a flat list, wrap it in another list
@@ -27,7 +29,7 @@ class PineconeStore(BaseVectorStore):
         self.index.upsert(items)
 
     def query(self, query_embedding, top_k=5):
-        results = self.index.query(query_embedding, top_k=top_k, include_metadata=True)
+        results = self.index.query(vector=query_embedding, top_k=top_k, include_metadata=True)
         return results
 
     def delete(self, ids):

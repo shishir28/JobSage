@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.services.agents.job_categorization_agent import categorization_agent
 from app.services.agents.job_summarizer_agent import summarization_agent
+from app.services.agents.job_recommendation_agent import recommendation_agent
 from fastapi.concurrency import run_in_threadpool
 
 router = APIRouter()
@@ -32,6 +33,10 @@ AGENTS = {
         "name": "Categorization Agent",
         "description": "Categorizes job requests."
     },
+    "recommendation": {
+        "name": "Recommendation Agent",
+        "description": "Provides Contractor recommendations."
+    },
     # Add more agents here
 }
 
@@ -48,6 +53,8 @@ async def process_job( job: JobRequest):
         result = await run_in_threadpool(categorization_agent.invoke, request)
     elif job.agent == "summarization":
         result = await run_in_threadpool(summarization_agent.invoke, request)
+    elif job.agent == "recommendation":
+        result = await run_in_threadpool(recommendation_agent.invoke, request)  
     else:
         raise HTTPException(status_code=400, detail="Unknown agent")
     return result

@@ -53,7 +53,7 @@
         </MudPaper>
     </MudItem>
     <MudItem xs="5">
-        <ChatWindow CurrentJob="job" />
+        <ChatWindow CurrentJob="job" OnContractorIdsReceived="HandleContractorIdsReceived" />
     </MudItem>
 </MudGrid>
 
@@ -63,7 +63,7 @@
     private JobDto job = new();
     private MudForm? form;
     private List<ContractorDto> contractors = new();
-
+    private List<string> filteredContractorIds = new();
     protected override async Task OnInitializedAsync()
     {
         job.EnsureNonNullNestedObjects();
@@ -88,5 +88,11 @@
     private void Cancel()
     {
         Nav.NavigateTo("/jobs");
+    }
+
+    private void HandleContractorIdsReceived(List<string> ids)
+    {
+        filteredContractorIds = ids;
+        contractors = contractors.Where(c => filteredContractorIds.Contains(c.Id)).ToList();
     }
 }

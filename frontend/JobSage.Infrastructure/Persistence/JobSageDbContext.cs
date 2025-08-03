@@ -10,7 +10,12 @@ namespace JobSage.Infrastructure.Persistence
         public DbSet<PropertyInformation> Properties { get; set; }
         public DbSet<SchedulingInfo> SchedulingInfos { get; set; }
         public DbSet<Contractor> Contractors { get; set; }
-        public JobSageDbContext(DbContextOptions<JobSageDbContext> options) : base(options) { }
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<Message> Messages { get; set; }
+
+        public JobSageDbContext(DbContextOptions<JobSageDbContext> options)
+            : base(options) { }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Job>(entity =>
@@ -61,6 +66,25 @@ namespace JobSage.Infrastructure.Persistence
                 entity.Property(e => e.HourlyRate);
                 entity.Property(e => e.Preferred);
                 entity.Property(e => e.WarrantyApproved);
+            });
+            modelBuilder.Entity<Conversation>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.UpdatedAt).IsRequired();
+                entity.HasMany(c => c.Messages)
+                    .WithOne(m => m.Conversation)
+                    .HasForeignKey(m => m.ConversationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Message>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Role).IsRequired();
+                entity.Property(e => e.Content).IsRequired();
+                entity.Property(e => e.ConversationId).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired();
             });
         }
     }

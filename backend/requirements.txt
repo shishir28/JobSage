@@ -30,3 +30,4 @@ pre-commit>=3.6.0
 invoke==2.2.0
 chromadb>=0.4.6
 pinecone >=2.2.0
+Flask-SQLAlchemy>=3.0.0

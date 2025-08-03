@@ -1,1 +1,0 @@
-# JobSage AI Backend Application

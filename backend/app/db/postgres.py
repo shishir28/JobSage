@@ -1,21 +1,22 @@
-import psycopg2
-from psycopg2.extras import DictCursor
+from sqlalchemy import create_engine, MetaData, Table, select
+from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 
-POSTGRES_CONFIG = {
-    "dbname": settings.POSTGRES_DB,
-    "user": settings.POSTGRES_USER,
-    "password": settings.POSTGRES_PASSWORD,
-    "host": settings.POSTGRES_HOST,
-    "port": settings.POSTGRES_PORT,
-}
+
+DATABASE_URL = (
+    f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
+    f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+)
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(bind=engine)
+metadata = MetaData()
 
 def fetch_jobs_from_postgres():
-    """Fetch all jobs from the PostgreSQL database."""
-    connection = psycopg2.connect(**POSTGRES_CONFIG)
-    cursor = connection.cursor(cursor_factory=DictCursor)
-    cursor.execute('SELECT * FROM "Jobs";')
-    jobs = cursor.fetchall()
-    cursor.close()
-    connection.close()
+    """Fetch all jobs from the PostgreSQL database using SQLAlchemy."""
+    jobs_table = Table("Jobs", metadata, autoload_with=engine)
+    with SessionLocal() as session:
+        stmt = select(jobs_table)
+        result = session.execute(stmt)
+        jobs = [dict(row._mapping) for row in result.fetchall()]
     return jobs

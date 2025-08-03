@@ -5,6 +5,10 @@ import structlog
 from app.core.config import settings
 from app.api.v1.router import api_router
 from app.core.ollama_client import ollama_client
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # Configure structured logging
 structlog.configure(
