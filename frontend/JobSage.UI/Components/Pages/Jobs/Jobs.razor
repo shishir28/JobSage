@@ -8,34 +8,35 @@
 @inject NavigationManager Nav
 <MudPaper Class="pa-4">
     <MudText Typo="Typo.h5">Jobs</MudText>
+    <MudStack Spacing="2">
+        <MudTable Items="JobList" Hover="true">
+            <HeaderContent>
+                <MudTh>Title</MudTh>
+                <MudTh>Type</MudTh>
+                <MudTh>Priority</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Due Date</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Title</MudTd>
+                <MudTd>@context.JobType</MudTd>
+                <MudTd>@context.Priority</MudTd>
+                <MudTd>@context.Status</MudTd>
+                <MudTd>@context.Scheduling?.DueDate?.ToShortDateString()</MudTd>
+                <MudTd>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => ViewJob(context.Id)">View
+                    </MudButton>
 
-    <MudTable Items="JobList" Hover="true">
-        <HeaderContent>
-            <MudTh>Title</MudTh>
-            <MudTh>Type</MudTh>
-            <MudTh>Priority</MudTh>
-            <MudTh>Status</MudTh>
-            <MudTh>Due Date</MudTh>
-            <MudTh>Actions</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Title</MudTd>
-            <MudTd>@context.JobType</MudTd>
-            <MudTd>@context.Priority</MudTd>
-            <MudTd>@context.Status</MudTd>
-            <MudTd>@context.Scheduling?.DueDate?.ToShortDateString()</MudTd>
-            <MudTd>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => ViewJob(context.Id)">View
-                </MudButton>
-
-                <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete"
-                    OnClick="(() => DeleteJobAsync(context.Id))">Delete </MudButton>
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
-    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Nav.NavigateTo("/jobs/add"))">
-        Create Job
-    </MudButton>
+                    <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete"
+                        OnClick="(() => DeleteJobAsync(context.Id))">Delete </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Nav.NavigateTo("/jobs/add"))">
+            Create Job
+        </MudButton>
+    </MudStack>
 </MudPaper>
 
 @code {

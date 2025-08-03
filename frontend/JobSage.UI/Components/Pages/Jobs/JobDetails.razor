@@ -7,28 +7,39 @@
 @inject IJobService JobService
 @inject NavigationManager Nav
 
-<MudPaper Class="pa-4">
-    <MudText Typo="Typo.h5">Job Details</MudText>
-    @if (job != null)
-    {
-        <MudText>Title: @job.Title</MudText>
-        <MudText>Description: @job.Description</MudText>
-        <MudText>Type: @job.JobType</MudText>
-        <MudText>Priority: @job.Priority</MudText>
-        <MudText>Status: @job.Status</MudText>
-        <MudText>Due Date: @job.Scheduling?.DueDate?.ToShortDateString()</MudText>
-        <MudText>Property: @job.PropertyInfo?.PropertyAddress</MudText>
-        <MudText>Estimated Cost: @job.Cost?.EstimatedCost</MudText>
-        <MudText>Actual Cost: @job.Cost?.ActualCost</MudText>
-        <MudText>Approved Budget: @job.Cost?.ApprovedBudget</MudText>
-        <MudText>Contractor: @job.Contractor?.Name</MudText>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditJob(job.Id)">Edit</MudButton>
-    }
-    else
-    {
-        <MudText>No job found.</MudText>
-    }
-</MudPaper>
+<MudGrid>
+    <MudItem xs="7">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h5">Job Details</MudText>
+            @if (job != null)
+            {
+                <MudStack Spacing="2">
+                    <MudTextField Value="@job.Title" Label="Title" Disabled="true" ReadOnly="true" />
+                    <MudTextField Value="@job.Description" Label="Description" Disabled="true" ReadOnly="true" />
+                    <MudTextField Value="@job.JobType.ToString()" Label="Type" Disabled="true" ReadOnly="true" />
+                    <MudTextField Value="@job.Priority.ToString()" Label="Priority" Disabled="true" ReadOnly="true" />
+                    <MudTextField Value="@job.Status.ToString()" Label="Status" Disabled="true" ReadOnly="true" />
+                    <MudTextField Value="@job.Scheduling?.DueDate?.ToShortDateString()" Label="Due Date" Disabled="true"
+                        ReadOnly="true" />
+                    <MudTextField Value="@job.PropertyInfo?.PropertyAddress" Label="Property Address" Disabled="true"
+                        ReadOnly="true" />
+                    <MudTextField Value="@job.Cost?.EstimatedCost" Label="Estimated Cost" Disabled="true" ReadOnly="true" />
+                    <MudTextField Value="@job.Cost?.ActualCost" Label="Actual Cost" Disabled="true" ReadOnly="true" />
+                    <MudTextField Value="@job.Cost?.ApprovedBudget" Label="Approved Budget" Disabled="true"
+                        ReadOnly="true" />
+                    <MudTextField Value="@job.TenantContact" Label="Tenant Contact" Disabled="true" ReadOnly="true" />
+                    <MudTextField Value="@job.Contractor?.Name" Label="Contractor" Disabled="true" ReadOnly="true" />
+                    <MudButton Class="mt-4" Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditJob(job.Id)">
+                        Edit</MudButton>
+                </MudStack>
+            }
+            else
+            {
+                <MudText>No job found.</MudText>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
 @code {
     [Parameter] public Guid Id { get; set; }

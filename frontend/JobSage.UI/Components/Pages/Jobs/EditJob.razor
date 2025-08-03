@@ -17,40 +17,42 @@
             @if (job != null)
             {
                 <MudForm @ref="form" Model="job">
-                    <MudTextField @bind-Value="job.Title" Label="Title" Required="true" />
-                    <MudTextField @bind-Value="job.Description" Label="Description" Required="true" />
-                    <MudSelect T="JobType" @bind-Value="job.JobType" Label="Type" Required="true">
-                        @foreach (JobType type in Enum.GetValues(typeof(JobType)))
-                        {
-                            <MudSelectItem Value="@type">@type</MudSelectItem>
-                        }
-                    </MudSelect>
-                    <MudSelect T="JobPriority" @bind-Value="job.Priority" Label="Priority" Required="true">
-                        @foreach (JobPriority priority in Enum.GetValues(typeof(JobPriority)))
-                        {
-                            <MudSelectItem Value="@priority">@priority</MudSelectItem>
-                        }
-                    </MudSelect>
-                    <MudSelect T="JobStatus" @bind-Value="job.Status" Label="Status" Required="true">
-                        @foreach (JobStatus status in Enum.GetValues(typeof(JobStatus)))
-                        {
-                            <MudSelectItem Value="status">@status</MudSelectItem>
-                        }
-                    </MudSelect>
-                    <MudTextField @bind-Value="job.PropertyInfo.PropertyAddress" Label="Property Address" />
-                    <MudDatePicker @bind-Date="job.Scheduling.DueDate" Label="Due Date" />
-                    <MudTextField @bind-Value="job.Cost.EstimatedCost" Label="Estimated Cost" />
-                    <MudTextField @bind-Value="job.Cost.ActualCost" Label="Actual Cost" />
-                    <MudTextField @bind-Value="job.Cost.ApprovedBudget" Label="Approved Budget" />
-                    <MudTextField @bind-Value="job.TenantContact" Label="Tenant Contact" />
-                    <MudSelect T="string" Label="Contractor" @bind-Value="job.Contractor.Id" Required="true">
-                        @foreach (var contractor in contractors)
-                        {
-                            <MudSelectItem Value="@contractor.Id">@contractor.Name (@contractor.Trade)</MudSelectItem>
-                        }
-                    </MudSelect>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveJob">Save</MudButton>
-                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+                    <MudStack Spacing="2">
+                        <MudTextField @bind-Value="job.Title" Label="Title" Required="true" />
+                        <MudTextField @bind-Value="job.Description" Label="Description" Required="true" />
+                        <MudSelect T="JobType" @bind-Value="job.JobType" Label="Type" Required="true">
+                            @foreach (JobType type in Enum.GetValues(typeof(JobType)))
+                            {
+                                <MudSelectItem Value="@type">@type</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect T="JobPriority" @bind-Value="job.Priority" Label="Priority" Required="true">
+                            @foreach (JobPriority priority in Enum.GetValues(typeof(JobPriority)))
+                            {
+                                <MudSelectItem Value="@priority">@priority</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect T="JobStatus" @bind-Value="job.Status" Label="Status" Required="true">
+                            @foreach (JobStatus status in Enum.GetValues(typeof(JobStatus)))
+                            {
+                                <MudSelectItem Value="@status">@status</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudTextField @bind-Value="job.PropertyInfo.PropertyAddress" Label="Property Address" />
+                        <MudDatePicker @bind-Date="job.Scheduling.DueDate" Label="Due Date" />
+                        <MudTextField @bind-Value="job.Cost.EstimatedCost" Label="Estimated Cost" />
+                        <MudTextField @bind-Value="job.Cost.ActualCost" Label="Actual Cost" />
+                        <MudTextField @bind-Value="job.Cost.ApprovedBudget" Label="Approved Budget" />
+                        <MudTextField @bind-Value="job.TenantContact" Label="Tenant Contact" />
+                        <MudSelect T="string" Label="Contractor" @bind-Value="job.Contractor.Id" Required="true">
+                            @foreach (var contractor in contractors)
+                            {
+                                <MudSelectItem Value="@contractor.Id">@contractor.Name (@contractor.Trade)</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveJob">Save</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+                    </MudStack>
                 </MudForm>
             }
             else
@@ -59,19 +61,27 @@
             }
         </MudPaper>
     </MudItem>
-    <MudItem xs="5">
+    <MudIconButton Icon="@Icons.Material.Filled.Chat" Color="Color.Primary" OnClick="ToggleDrawer"
+        Style="position: absolute; top: 16px; right: 16px; z-index: 1200;" />
+    <MudDrawer Anchor="MudBlazor.Anchor.End" Open="@_drawerOpen" Elevation="4" Variant="DrawerVariant.Temporary" Width="400px"
+        Class="pa-4">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">Chat</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="ToggleDrawer" />
+        </MudDrawerHeader>
         @if (job != null)
         {
             <ChatWindow CurrentJob="job" />
         }
-
-    </MudItem>
+    </MudDrawer>
 
 </MudGrid>
 
 
 
 @code {
+    private bool _drawerOpen = true;
     [Parameter] public Guid Id { get; set; }
     private JobDto? job;
     private MudForm? form;
@@ -101,4 +111,6 @@
     {
         Nav.NavigateTo($"/jobs/{Id}");
     }
+
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 }
