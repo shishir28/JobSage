@@ -1,7 +1,41 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>JobSage - Smart Job Management</PageTitle>
 
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
+<MudPaper Class="pa-6 mt-8" Elevation="4">
+    <div style="display: flex; flex-direction: row; align-items: center; gap: 2rem; flex-wrap: wrap;">
+        <div style="flex: 1 1 320px; min-width: 280px;">
+            <MudText Typo="Typo.h2" Class="mb-2" Color="Color.Primary">Welcome to JobSage</MudText>
+            <MudText Typo="Typo.subtitle1" Class="mb-4">
+                Your intelligent platform for managing property maintenance, contractors, and job workflows—all in one
+                place.
+            </MudText>
+            <MudDivider Class="mb-4" />
+            <MudText Typo="Typo.body1" Class="mb-2">
+                <b>JobSage</b> streamlines the process of tracking jobs, assigning contractors, and monitoring costs for
+                property managers and owners. With a modern, chat-inspired interface and powerful analytics, JobSage
+                helps you:
+            </MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">• Create, edit, and track maintenance jobs with ease</MudListItem>
+                <MudListItem T="string">• Assign and communicate with contractors in real time</MudListItem>
+                <MudListItem T="string">• Monitor job status, due dates, and budget performance</MudListItem>
+                <MudListItem T="string">• Collaborate using a built-in chat window for every job</MudListItem>
+                <MudListItem T="string">• Switch between light and dark themes for comfortable viewing</MudListItem>
+            </MudList>
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.body2" Class="mb-2">
+                <b>Get started</b> by exploring the <MudLink Href="/jobs">Jobs</MudLink> page, or use the navigation
+                menu to
+                access all features.
+            </MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                &copy; 2025 JobSage. All rights reserved.
+            </MudText>
+        </div>
+        <div style="flex: 1 1 320px; min-width: 280px; display: flex; justify-content: center; align-items: center;">
+            <img src="/images/jobsage.png" alt="JobSage maintenance illustration"
+                style="max-width: 350px; width: 100%; border-radius: 1rem; box-shadow: 0 2px 16px rgba(0,0,0,0.08); background: #f5f5f5; padding: 1rem;" />
+        </div>
+    </div>
+</MudPaper>
