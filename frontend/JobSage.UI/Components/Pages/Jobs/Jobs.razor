@@ -6,8 +6,18 @@
 @using JobSage.UI.Services
 @inject IJobService JobService
 @inject NavigationManager Nav
+
 <MudPaper Class="pa-4">
-    <MudText Typo="Typo.h5">Jobs</MudText>
+    <MudGrid AlignItems="Center" Justify="Justify.SpaceBetween">
+        <MudItem xs="6">
+            <MudText Typo="Typo.h5">Jobs</MudText>
+        </MudItem>
+        <MudItem xs="6" Class="d-flex justify-end">
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Nav.NavigateTo("/jobs/add"))">
+                Create Job
+            </MudButton>
+        </MudItem>
+    </MudGrid>
     <MudStack Spacing="2">
         <MudTable Items="JobList" Hover="true">
             <HeaderContent>
@@ -27,15 +37,11 @@
                 <MudTd>
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => ViewJob(context.Id)">View
                     </MudButton>
-
                     <MudButton Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete"
                         OnClick="(() => DeleteJobAsync(context.Id))">Delete </MudButton>
                 </MudTd>
             </RowTemplate>
         </MudTable>
-        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => Nav.NavigateTo("/jobs/add"))">
-            Create Job
-        </MudButton>
     </MudStack>
 </MudPaper>
 

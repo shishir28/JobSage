@@ -31,6 +31,10 @@
                     <MudTextField Value="@job.Contractor?.Name" Label="Contractor" Disabled="true" ReadOnly="true" />
                     <MudButton Class="mt-4" Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditJob(job.Id)">
                         Edit</MudButton>
+                    <MudButton Class="mt-2" Variant="Variant.Outlined" Color="Color.Default"
+                        StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="GoToJobs">
+                        Back to Jobs
+                    </MudButton>
                 </MudStack>
             }
             else
@@ -53,5 +57,9 @@
     private void EditJob(Guid id)
     {
         Nav.NavigateTo($"/jobs/edit/{id}");
+    }
+    private void GoToJobs()
+    {
+        Nav.NavigateTo("/jobs");
     }
 }
