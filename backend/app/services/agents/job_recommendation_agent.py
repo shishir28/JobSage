@@ -3,8 +3,7 @@ from app.vector_stores.utils import generate_embedding
 from app.core.config import settings  # Adjust the import path if your settings module is elsewhere
 from langchain_core.runnables import RunnableMap, RunnableLambda
 from app.db.models.contractor import Contractor
-from sqlalchemy.orm import sessionmaker
-from app.db.models import engine  # Use the plain SQLAlchemy engine, not db
+from app.services.agents.tools import get_contractor_details_from_db
 
 def analyze_maintenance_job(job_title: str, job_description: str):
     """
@@ -41,20 +40,6 @@ def enrich_with_postgres(recommendations):
         enriched.append(rec)
     return enriched
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def get_contractor_details_from_db(contractorid: str):
-    with SessionLocal() as session:
-        contractor = session.query(Contractor).get(contractorid)
-        if not contractor:
-            return {}
-        return {
-            "name": contractor.Name,
-            "contactinfo": contractor.ContactInfo,
-            "location": contractor.Location,
-            "hourlyrate": contractor.HourlyRate,
-            "rating": contractor.Rating,
-        }
     
 recommendation_agent = (
     RunnableMap({
