@@ -1,23 +1,15 @@
 from app.vector_stores.pinecone_store import PineconeStore
 from app.vector_stores.utils import generate_embedding
 from app.core.config import settings  # Adjust the import path if your settings module is elsewhere
-from langchain_core.runnables import RunnableMap
-
-recommendation_agent = (
-    RunnableMap({
-        "job_title": lambda x: x["title"],
-        "job_description": lambda x: x["description"],
-    })
-    | (lambda x: analyze_maintenance_job(x["job_title"], x["job_description"]))
-)
+from langchain_core.runnables import RunnableMap, RunnableLambda
+from app.db.models.contractor import Contractor
+from sqlalchemy.orm import sessionmaker
+from app.db.models import engine  # Use the plain SQLAlchemy engine, not db
 
 def analyze_maintenance_job(job_title: str, job_description: str):
     """
     Analyze a maintenance job by categorizing it and providing recommendations.
     """
-    # Categorization logic can be added here if needed
-    # For now, we just return the recommendation
-   # Combine title and description for embedding
     combined_text = f"{job_title} {job_description}"
     embedding = generate_embedding(combined_text)
 
@@ -33,7 +25,42 @@ def analyze_maintenance_job(job_title: str, job_description: str):
         metadata = match.get("metadata", {})
         recommendations.append({
             "contractorid": metadata.get("contractorid"),
-            "actualcost": metadata.get("actualcost"),
+            # "actualcost": metadata.get("actualcost"),
             "estimatedcost": metadata.get("estimatedcost"),
         })
     return recommendations
+
+def enrich_with_postgres(recommendations):
+    # For each contractorid, query Postgres and add details
+    enriched = []
+    for rec in recommendations:
+        contractorid = rec["contractorid"]
+        # Query Postgres for details (use your ORM or db access layer)
+        details = get_contractor_details_from_db(contractorid)
+        rec.update(details)
+        enriched.append(rec)
+    return enriched
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_contractor_details_from_db(contractorid: str):
+    with SessionLocal() as session:
+        contractor = session.query(Contractor).get(contractorid)
+        if not contractor:
+            return {}
+        return {
+            "name": contractor.Name,
+            "contactinfo": contractor.ContactInfo,
+            "location": contractor.Location,
+            "hourlyrate": contractor.HourlyRate,
+            "rating": contractor.Rating,
+        }
+    
+recommendation_agent = (
+    RunnableMap({
+        "job_title": lambda x: x["title"],
+        "job_description": lambda x: x["description"],
+    })
+    | (lambda x: analyze_maintenance_job(x["job_title"], x["job_description"]))
+    | RunnableLambda(enrich_with_postgres)
+)

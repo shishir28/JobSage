@@ -1,6 +1,6 @@
 from typing import TypeVar, Type
 from abc import abstractmethod
-from app.web.db import db
+from . import db
 
 T = TypeVar("T", bound="BaseModel")
 
@@ -24,3 +24,8 @@ class BaseModel(db.Model):
             db.session.commit()
             return True
         return False
+
+    @classmethod
+    def get_by_id(cls: Type[T], id: str) -> T | None:
+        """Retrieve an instance of the model by its ID."""
+        return cls.query.get(id)
