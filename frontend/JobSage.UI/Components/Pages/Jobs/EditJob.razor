@@ -8,6 +8,7 @@
 @using JobSage.UI.Models
 @using JobSage.UI.Services
 @inject NavigationManager Nav
+@inject IChatStateService ChatState
 
 <MudPopoverProvider />
 <MudGrid>
@@ -63,8 +64,8 @@
     </MudItem>
     <MudIconButton Icon="@Icons.Material.Filled.Chat" Color="Color.Primary" OnClick="ToggleDrawer"
         Style="position: absolute; top: 16px; right: 16px; z-index: 1200;" />
-    <MudDrawer Anchor="MudBlazor.Anchor.End" Open="@_drawerOpen" Elevation="4" Variant="DrawerVariant.Temporary" Width="400px"
-        Class="pa-4">
+    <MudDrawer Anchor="MudBlazor.Anchor.End" Open="@_drawerOpen" Elevation="4" Variant="DrawerVariant.Temporary"
+        Width="400px" Class="pa-4">
         <MudDrawerHeader>
             <MudText Typo="Typo.h6">Chat</MudText>
             <MudSpacer />
@@ -72,13 +73,13 @@
         </MudDrawerHeader>
         @if (job != null)
         {
-            <ChatWindow CurrentJob="job" />
+            <ChatWindow CurrentJob="job" ConversationId="@conversationId"
+                OnConversationIdChanged="HandleConversationIdChanged"
+                OnContractorIdsReceived="HandleContractorIdsReceived" />
         }
     </MudDrawer>
 
 </MudGrid>
-
-
 
 @code {
     private bool _drawerOpen = true;
@@ -86,6 +87,7 @@
     private JobDto? job;
     private MudForm? form;
     private List<ContractorDto> contractors = new();
+    private string? conversationId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,4 +115,25 @@
     }
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private async Task HandleConversationIdChanged(string newConversationId)
+    {
+        conversationId = newConversationId;
+        if (job != null)
+        {
+            ChatState.SetConversationId(job.Id, newConversationId);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Try to restore any existing conversation ID for this job
+        conversationId = ChatState.GetConversationId(Id);
+    }
+
+    private void HandleContractorIdsReceived(List<string> ids)
+    {
+        // Update the contractors list with recommended contractors
+        contractors = contractors.Where(c => ids.Contains(c.Id)).ToList();
+    }
 }

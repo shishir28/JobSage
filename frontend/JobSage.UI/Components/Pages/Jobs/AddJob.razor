@@ -8,6 +8,7 @@
 @using JobSage.UI.Models
 @using JobSage.UI.Services
 @inject NavigationManager Nav
+@inject IChatStateService ChatState
 
 <MudPopoverProvider />
 <MudGrid>
@@ -56,19 +57,21 @@
     </MudItem>
     <MudIconButton Icon="@Icons.Material.Filled.Chat" Color="Color.Primary" OnClick="ToggleDrawer"
         Style="position: absolute; top: 16px; right: 16px; z-index: 1200;" />
-    <MudDrawer Anchor="MudBlazor.Anchor.End" Open="@_drawerOpen" Elevation="4" Variant="DrawerVariant.Temporary" Width="400px"
-        Class="pa-4">
+    <MudDrawer Anchor="MudBlazor.Anchor.End" Open="@_drawerOpen" Elevation="4" Variant="DrawerVariant.Temporary"
+        Width="400px" Class="pa-4">
         <MudDrawerHeader>
             <MudText Typo="Typo.h6">Chat</MudText>
             <MudSpacer />
             <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="ToggleDrawer" />
         </MudDrawerHeader>
-        <ChatWindow CurrentJob="job" OnContractorIdsReceived="HandleContractorIdsReceived" />
+        <ChatWindow CurrentJob="job" OnContractorIdsReceived="HandleContractorIdsReceived"
+            ConversationId="@conversationId" OnConversationIdChanged="HandleConversationIdChanged" />
     </MudDrawer>
 </MudGrid>
 
 @code {
-    string selectedContractorId; // temporary field just for the form
+    private string? selectedContractorId; // temporary field just for the form
+    private string? conversationId;
 
     private JobDto job = new();
     private MudForm? form;
@@ -108,4 +111,21 @@
     }
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private async Task HandleConversationIdChanged(string newConversationId)
+    {
+        conversationId = newConversationId;
+        if (job.Id != Guid.Empty)
+        {
+            ChatState.SetConversationId(job.Id, newConversationId);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (job.Id != Guid.Empty)
+        {
+            conversationId = ChatState.GetConversationId(job.Id);
+        }
+    }
 }

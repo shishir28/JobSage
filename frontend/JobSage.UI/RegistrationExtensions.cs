@@ -14,7 +14,7 @@ namespace JobSage.UI
                 c.BaseAddress = baseAddress
             );
             services.AddHttpClient<IChatService, ChatService>(c => c.BaseAddress = baseAddress);
-            // services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IChatStateService, ChatStateService>();
             return services;
         }
     }

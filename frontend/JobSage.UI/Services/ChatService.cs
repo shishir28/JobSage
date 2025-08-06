@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using JobSage.UI.Models;
 
@@ -8,6 +9,7 @@ namespace JobSage.UI.Services
     {
         Task<JsonElement> SendMessageAsync(JobDto job, string agentKind);
         Task<Dictionary<string, AgentDto>> GetAgentsAsync();
+        Task<ChatMessageResponse> SendChatMessageAsync(string message, string? conversationId = null, Dictionary<string, object>? filter = null, string? nameSpace = null);
     }
 
     public class ChatService : IChatService
@@ -72,6 +74,33 @@ namespace JobSage.UI.Services
         {
             using var parsedSummaryDocument = JsonDocument.Parse(value);
             return parsedSummaryDocument.RootElement.Clone();
+        }
+
+        public async Task<ChatMessageResponse> SendChatMessageAsync(
+            string message,
+            string? conversationId = null,
+            Dictionary<string, object>? filter = null,
+            string? nameSpace = null)
+        {
+            var request = new ChatMessageRequest
+            {
+                Message = message,
+                ConversationId = conversationId,
+                Filter = filter,
+                Namespace = nameSpace
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("api/chat/messages", request);
+
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Chat request failed: {response.StatusCode}");
+
+            var chatResponse = await response.Content.ReadFromJsonAsync<ChatMessageResponse>();
+
+            if (chatResponse == null)
+                throw new InvalidOperationException("Failed to deserialize chat response.");
+
+            return chatResponse;
         }
     }
 }

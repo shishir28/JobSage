@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
 using JobSage.Application.Interfaces;
+using JobSage.Domain.DTOs;
 
 namespace JobSage.Infrastructure.Services
 {
@@ -47,6 +48,34 @@ namespace JobSage.Infrastructure.Services
                 throw new InvalidOperationException("Failed to deserialize agents response.");
 
             return agents;
+        }
+
+        public async Task<ChatMessageResponse> SendChatMessageAsync(
+            string message,
+            string? conversationId = null,
+            Dictionary<string, object>? filter = null,
+            string? nameSpace = null
+        )
+        {
+            var chatRequest = new ChatMessageRequest
+            {
+                Message = message,
+                ConversationId = conversationId,
+                Filter = filter,
+                Namespace = nameSpace,
+            };
+
+            var response = await _client.PostAsJsonAsync("chat/messages", chatRequest);
+
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Chat request failed: {response.StatusCode}");
+
+            var chatResponse = await response.Content.ReadFromJsonAsync<ChatMessageResponse>();
+
+            if (chatResponse == null)
+                throw new InvalidOperationException("Failed to deserialize chat response.");
+
+            return chatResponse;
         }
     }
 }

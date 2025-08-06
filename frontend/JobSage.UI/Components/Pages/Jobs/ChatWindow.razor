@@ -45,6 +45,8 @@
 
 @code {
     [Parameter] public JobDto? CurrentJob { get; set; }
+    [Parameter] public string? ConversationId { get; set; }
+    [Parameter] public EventCallback<string> OnConversationIdChanged { get; set; }
 
     private class ChatMessage
     {
@@ -158,29 +160,76 @@
         {
             messages.Add(new ChatMessage { Text = $"You: {userInput}", IsUser = true });
 
-            await Task.Delay(1000); // Simulate a delay for the agent response
-                                    @* var response = await Http.PostAsJsonAsync($"/api/chat/{CurrentJob?.Id}", new { message = userInput }); 
-             var reply = await response.Content.ReadAsStringAsync();
-
             try
             {
-                var parsedReply = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(reply);
-                if (parsedReply.TryGetProperty("Summary", out var summary))
+                // Create filter if CurrentJob is available
+                Dictionary<string, object>? filter = null;
+                if (CurrentJob != null)
                 {
-                    messages.Add(new ChatMessage { Text = summary.GetString() ?? "", IsUser = false });
+                    filter = new Dictionary<string, object>
+                    {
+                        { "jobId", CurrentJob.Id.ToString() }
+                };
                 }
-                else
+
+                // Call the chat service with conversation ID if available
+                var response = await ChatService.SendChatMessageAsync(
+                message: userInput,
+                conversationId: ConversationId,
+                filter: filter
+                );
+
+                // Update conversation ID if it's new
+                if (string.IsNullOrEmpty(ConversationId) && !string.IsNullOrEmpty(response.ConversationId))
                 {
-                    messages.Add(new ChatMessage { Text = reply, IsUser = false });
-                }
+                    ConversationId = response.ConversationId;
+                    await OnConversationIdChanged.InvokeAsync(ConversationId);
+                } // Format the response
+                var formattedMessage = FormatChatResponse(response);
+                messages.Add(new ChatMessage { Text = formattedMessage, IsUser = false });
             }
-            catch (System.Text.Json.JsonException)
+            catch (Exception ex)
             {
-                messages.Add(new ChatMessage { Text = reply, IsUser = false });
-            } *@
+                messages.Add(new ChatMessage
+                {
+                    Text = $"Error: {ex.Message}",
+                    IsUser = false
+                });
+            }
 
             userInput = "";
         }
+    }
+
+    private string FormatChatResponse(ChatMessageResponse response)
+    {
+        var messageBuilder = new System.Text.StringBuilder();
+
+        // Add the main message
+        messageBuilder.AppendLine(response.Message);
+
+        // Add source documents if any
+        if (response.SourceDocuments.Any())
+        {
+            messageBuilder.AppendLine("\nSource Documents:");
+            foreach (var doc in response.SourceDocuments)
+            {
+                messageBuilder.AppendLine("---");
+                messageBuilder.AppendLine(doc.Content);
+
+                // Add relevant metadata
+                if (doc.Metadata.Any())
+                {
+                    messageBuilder.AppendLine("\nMetadata:");
+                    foreach (var meta in doc.Metadata)
+                    {
+                        messageBuilder.AppendLine($"- {meta.Key}: {meta.Value}");
+                    }
+                }
+            }
+        }
+
+        return messageBuilder.ToString();
     }
 
     private async Task SelectAgent(string agentName)
