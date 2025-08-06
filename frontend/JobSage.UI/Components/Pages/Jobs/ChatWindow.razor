@@ -37,7 +37,8 @@
                 </MudListItem>
             }
         </MudList>
-        <MudTextField @bind-Value="userInput" Placeholder="Type a message..." />
+        <MudTextField @bind-Value="userInput" Placeholder="Type a message..." @onkeyup="HandleKeyPress"
+            Immediate="true" />
         <MudButton OnClick="SendMessage" Color="Color.Primary">Send</MudButton>
     </MudPaper>
 </div>
@@ -167,10 +168,10 @@
                 if (CurrentJob != null)
                 {
                     filter = new Dictionary<string, object>
-                    {
-                        { "jobId", CurrentJob.Id.ToString() }
-                };
-                }
+        {
+        { "jobId", CurrentJob.Id.ToString() }
+        };
+                        }
 
                 // Call the chat service with conversation ID if available
                 var response = await ChatService.SendChatMessageAsync(
@@ -243,5 +244,13 @@
 
         if (CurrentJob != null)
             await LoadAgentResponseAsync(CurrentJob, agentId);
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendMessage();
+        }
     }
 }
