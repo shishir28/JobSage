@@ -1,18 +1,36 @@
-from pydantic import BaseModel
+from app.db.models.base import BaseModel
 from datetime import datetime, timezone
-
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-
-import db
+from . import db, SessionLocal
 import uuid
+
+# Import Conversation model to ensure it's loaded before Message model
+from app.db.models.conversation import Conversation
+
+def create_message(**kwargs):
+    """Create a new message in the database."""
+    session = SessionLocal()
+    try:
+        message = Message(**kwargs)
+        session.add(message)
+        session.commit()
+        session.refresh(message)
+        return message
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
 
 class Message(BaseModel):
     """Message model for storing chat messages in a SQL database."""
-    Id: str = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    CreatedAt: datetime = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    Role: str = db.Column(db.String, nullable=False)
-    Content: str = db.Column(db.Text, nullable=False)
-    ConversationId: str = db.Column(db.String, db.ForeignKey('Conversation.Id'), nullable=False)
+    __tablename__ = "Messages"
+    
+    Id = db.Column(db.UUID, primary_key=True, default=uuid.uuid4)
+    CreatedAt = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    Role = db.Column(db.Text, nullable=False)
+    Content = db.Column(db.Text, nullable=False)
+    ConversationId = db.Column(db.UUID, db.ForeignKey('Conversations.Id', ondelete='CASCADE'), nullable=False)
     conversation = db.relationship("Conversation", back_populates="messages")
     
     def as_dict(self):

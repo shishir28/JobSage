@@ -1,89 +1,82 @@
-from pydantic import BaseModel
-from langchain.memory import ChatConversationBufferMemory
-from langchain.memory.chat_message_histories import BaseChatMessageHistory
-from app.models import Message  # Adjust the import path as needed
-import db
+from langchain.memory import ConversationBufferMemory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from app.db.models.message import Message, create_message
+from app.db.models import SessionLocal
+from app.chat import ChatArgs
+
 class SQLChatMessageHistory(BaseChatMessageHistory):
-    """SQL-based chat message history.
-
-    This class extends BaseChatMessageHistory to provide a chat message history that is stored in a SQL database.
-    """
-
-    def __init__(self, conversation_id: str**kwargs):
-        super().__init__(**kwargs)
+    """Chat message history that stores messages in a PostgreSQL database."""
+    
+    def __init__(self, conversation_id: str):
         self.conversation_id = conversation_id
-        self._messages = []  # Initialize an empty list to hold messages
-        # Additional initialization for SQL-specific behavior can be added here.
+        # Ensure conversation exists
+        from app.db.models.conversation import get_or_create_conversation
+        get_or_create_conversation(conversation_id)
 
     @property
-    def messages(self):
+    def messages(self) -> list[BaseMessage]:
         """Retrieve messages from the SQL database."""
+        session = SessionLocal()
         try:
+            # Query messages and order by creation time
             messages = (
-                db.session.query(Message)
-                .filter_by(conversation_id=self.conversation_id)
-                .order_by(Message.created_at.desc())
+                session.query(Message)
+                .filter_by(ConversationId=self.conversation_id)
+                .order_by(Message.CreatedAt.asc())  # Get messages in chronological order
                 .all()
             )
-            result = [message.as_lc_message() for message in messages]
-            return result if result is not None else []
+            return [message.as_lc_message() for message in messages] if messages else []
         except Exception as e:
             print(f"Error retrieving messages: {e}")
             return []
-        
-    def add_message(self, message: BaseModel):
-        """Add a message to the SQL database."""
-        try:
-            sql_message = Message(
-                Role=message.role,
-                Content=message.content,
-                ConversationId=self.conversation_id
-            )
-            db.session.add(sql_message)
-            db.session.commit()
-            self._messages.append(message)  # Update the in-memory list
-        except Exception as e:
-            print(f"Error adding message: {e}")
-            db.session.rollback()
+        finally:
+            session.close()
 
-    def add_message(self,message):
-        return self.add_message_to_conversation(
-            self.conversation_id, 
-            message.role, message.content)
- 
-    def add_user_message(self, content: str) -> Message:
-        """Add a user message to the SQL database."""
-        return self.add_message_to_conversation(
-            self.conversation_id, "user", content)     
-    
-    def add_ai_message(self, content: str) -> Message:
-        """Add an AI message to the SQL database."""
-        return self.add_message_to_conversation(
-            self.conversation_id, "assistant", content)
-
-    def add_message_to_conversation(self, conversation_id: str, role: str, content: str) -> Message:
-        """Add a user message to the SQL database."""
-        return Message.create(
-            Role=role,
+    def add_user_message(self, content: str) -> None:
+        """Add a human message to the store."""
+        create_message(
+            Role="human",
             Content=content,
-            ConversationId=conversation_id)
-    
-    def clear(self):
-        """Clear the message history."""
+            ConversationId=self.conversation_id
+        )
+
+    def add_ai_message(self, content: str) -> None:
+        """Add an AI message to the store."""
+        create_message(
+            Role="ai",
+            Content=content,
+            ConversationId=self.conversation_id
+        )
+
+    def add_message(self, message: BaseMessage) -> None:
+        """Add a message to the store."""
+        if isinstance(message, HumanMessage):
+            self.add_user_message(message.content)
+        elif isinstance(message, AIMessage):
+            self.add_ai_message(message.content)
+        else:
+            raise ValueError(f"Unsupported message type: {type(message)}")
+
+    def clear(self) -> None:
+        """Clear message history."""
+        session = SessionLocal()
         try:
-            db.session.query(Message).filter_by(conversation_id=self.conversation_id).delete()
-            db.session.commit()
-            self._messages = []  # Clear the in-memory list
+            session.query(Message).filter_by(ConversationId=self.conversation_id).delete()
+            session.commit()
         except Exception as e:
             print(f"Error clearing messages: {e}")
-            db.session.rollback()
-            
-    
-def build_sql_memory(chat_args: ChatArgs) -> ChatConversationBufferMemory:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+def build_sql_memory(chat_args: ChatArgs) -> ConversationBufferMemory:
     """Build a SQL-based chat memory."""
-    return ChatConversationBufferMemory(
+    return ConversationBufferMemory(
         chat_memory=SQLChatMessageHistory(conversation_id=chat_args.conversation_id),
         return_messages=True,
         memory_key="chat_history",
-        input_key="answer"
+        input_key="question",
+        output_key="answer"
     )

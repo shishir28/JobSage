@@ -16,3 +16,5 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Import models to ensure they are registered with SQLAlchemy
+from app.db.models.conversation import Conversation
+from app.db.models.message import Message
