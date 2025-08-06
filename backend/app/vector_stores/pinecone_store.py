@@ -184,6 +184,9 @@ class PineconeStore(VectorStore, BaseVectorStore):
                 continue
             metadata = match.metadata.copy()
             text = metadata.pop("text", "")
-            docs.append(Document(page_content=text, metadata=metadata))
+            # Use the ID from metadata as the document ID
+            doc = Document(page_content=text, metadata=metadata)
+            doc.id = metadata.get("id")  # Set the document ID from metadata
+            docs.append(doc)
             
         return docs
