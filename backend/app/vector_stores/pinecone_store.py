@@ -150,6 +150,43 @@ class PineconeStore(VectorStore, BaseVectorStore):
             search_type="similarity"
         )
 
+    def _extract_search_terms(self, query: str) -> str:
+        """Extract key search terms from a conversational query."""
+        import re
+        
+        # Step 1: Convert to lowercase
+        cleaned_query = query.lower()
+
+        # Step 2: Remove common question/conversational patterns
+        patterns_to_remove = [
+            r'\b(okay|ok|hi|hello|thanks|thank you)\b',
+            r'\b(can|could|would|should|please|may|might)\b',
+            r'\b(i need|i want|i\'m looking for|looking for|need to|want to)\b',
+            r'\b(suggest|recommend|find|help|assist|get|give me)\b',
+            r'\b(any|some|the|a|an)\b',
+            r'\b(contractor|contractors|professional|professionals|person|people)\b',
+            r'\b(who can|that can|which can)\b',
+            r'[?.!,]'  # Remove common punctuation
+        ]
+        
+        # Apply each pattern
+        for pattern in patterns_to_remove:
+            cleaned_query = re.sub(pattern, ' ', cleaned_query)
+        
+        # Step 3: Clean up whitespace and get unique terms
+        terms = cleaned_query.split()
+        unique_terms = []
+        for term in terms:
+            # Only keep meaningful terms (longer than 2 characters)
+            if len(term) > 2 and term not in unique_terms:
+                unique_terms.append(term)
+        
+        cleaned_query = ' '.join(unique_terms)
+        
+        print(f"Original query: {query}")
+        print(f"Cleaned query: {cleaned_query}")
+        return cleaned_query
+
     def similarity_search(
         self,
         query: str,
@@ -159,10 +196,40 @@ class PineconeStore(VectorStore, BaseVectorStore):
         **kwargs: Any,
     ) -> List[Document]:
         """Return docs most similar to query."""
-        # Generate the embedding for the query
-        query_embedding = self.embedding_function(query)
+        # Clean the query to extract key search terms
+        search_query = self._extract_search_terms(query)
+        
+        # Generate the embedding for the cleaned query
+        query_embedding = self.embedding_function(search_query)
+        
+        # Print the query for debugging
+        print(f"\nSearching Pinecone with cleaned query: {search_query}")
+        
+        # Debug: Let's see what's in the index
+        try:
+            # Get index statistics
+            stats = self.index.describe_index_stats()
+            print("\nPinecone Index Stats:")
+            print(f"Total vectors: {stats.total_vector_count}")
+            print(f"Dimension: {stats.dimension}")
+            if hasattr(stats, 'namespaces'):
+                print("Namespaces:", list(stats.namespaces.keys()))
+            
+            # Sample a few random vectors to see their metadata
+            # if stats.total_vector_count > 0:
+            #     print("\nSampling a few vectors for debugging:")
+            #     sample_results = self.index.query(
+            #         vector=[0.0] * stats.dimension,  # Use zero vector to get random results
+            #         top_k=3,
+            #         include_metadata=True
+            #     )
+            #     for i, match in enumerate(sample_results.matches):
+            #         print(f"\nSample {i+1} metadata:", match.metadata)
+        except Exception as e:
+            print(f"Debug info error (non-critical): {str(e)}")
         
         # Set up search parameters
+        
         search_params = {}
         if filter:
             search_params["filter"] = filter
@@ -177,16 +244,42 @@ class PineconeStore(VectorStore, BaseVectorStore):
             **search_params
         )
         
+        # Print number of matches found
+        print(f"Found {len(results.matches)} matches in Pinecone")
+        
         # Convert results to Documents
         docs = []
         for match in results.matches:
             if match.metadata is None:
+                print(f"Skipping match - no metadata")
                 continue
+                
+            # Debug print
+            # print(f"\nMatch score: {match.score}")
+            # print(f"Match metadata: {match.metadata}")
+            
             metadata = match.metadata.copy()
-            text = metadata.pop("text", "")
-            # Use the ID from metadata as the document ID
+            
+            # Keep the original description in page_content
+            # Don't remove the text from metadata as it might be needed
+            text = metadata.get("text", "")
+            if not text:
+                # If no text in metadata, try to get the job description from other fields
+                text = metadata.get("description", metadata.get("jobdescription", ""))
+            
+            # Add the similarity score to metadata
+            metadata['similarity_score'] = match.score
+            
+            # Create document with original text as page_content and all metadata
             doc = Document(page_content=text, metadata=metadata)
-            doc.id = metadata.get("id")  # Set the document ID from metadata
+            
+            # Debug print
+            # print(f"Created document with:")
+            # print(f"- page_content: {text[:100]}...")  # Print first 100 chars
+            # print(f"- metadata keys: {list(metadata.keys())}")
+            # print(f"- similarity score: {match.score}")
+            
             docs.append(doc)
             
+        # print(f"\nReturning {len(docs)} documents")
         return docs

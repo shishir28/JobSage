@@ -165,13 +165,13 @@
             {
                 // Create filter if CurrentJob is available
                 Dictionary<string, object>? filter = null;
-                if (CurrentJob != null)
+                @* if (CurrentJob != null)
                 {
                     filter = new Dictionary<string, object>
-        {
-        { "jobId", CurrentJob.Id.ToString() }
-        };
-                        }
+{
+{ "jobId", CurrentJob.Id.ToString() }
+};
+                } *@
 
                 // Call the chat service with conversation ID if available
                 var response = await ChatService.SendChatMessageAsync(
