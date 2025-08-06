@@ -78,10 +78,11 @@ class SQLChatMessageHistory(BaseChatMessageHistory):
             print(f"Error clearing messages: {e}")
             db.session.rollback()
             
-def build_sql_memory(conversation_id: str, **kwargs) -> ChatConversationBufferMemory:
+    
+def build_sql_memory(chat_args: ChatArgs) -> ChatConversationBufferMemory:
     """Build a SQL-based chat memory."""
     return ChatConversationBufferMemory(
-        chat_memory=SQLChatMessageHistory(conversation_id=conversation_id, **kwargs),
+        chat_memory=SQLChatMessageHistory(conversation_id=chat_args.conversation_id),
         return_messages=True,
         memory_key="chat_history",
         input_key="answer"

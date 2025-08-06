@@ -1,4 +1,4 @@
-from pinecone import Pinecone, ServerlessSpec
+from pinecone import Pinecone
 
 from app.vector_stores.base_store import BaseVectorStore
 from app.core.config import settings
